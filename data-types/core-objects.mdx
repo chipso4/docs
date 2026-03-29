@@ -1,0 +1,111 @@
+---
+title: "Core objects"
+description: "Address, DataAttribute, pagination, and error response — the building blocks used across all endpoints."
+---
+
+## Address
+
+A standard address structure used wherever physical addresses appear.
+
+```json
+{
+  "address1": "1200 Industrial Blvd",
+  "address2": "Suite 300",
+  "address3": null,
+  "city": "Nashville",
+  "state": "Tennessee",
+  "stateCode": "TN",
+  "zip": "37201",
+  "country": "United States",
+  "countryCode": "US"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `address1` | string | No | Primary street address |
+| `address2` | string | No | Secondary line (suite, unit) |
+| `address3` | string | No | Additional line |
+| `city` | string | No | City |
+| `state` | string | No | State/province full name |
+| `stateCode` | string | No | State/province abbreviation |
+| `zip` | string | No | Postal/zip code |
+| `country` | string | No | Country full name |
+| `countryCode` | string | No | ISO 3166-1 alpha-2 code (e.g., `"US"`, `"CA"`) |
+
+---
+
+## DataAttribute
+
+The extensibility mechanism for the entire API. A generic name-value pair for adding manufacturer-specific data to any entity — product specs, industry-specific fields, ERP codes, rate structures, and anything else that doesn't fit the standard schema.
+
+```json
+{
+  "name": "CapacityGallons",
+  "value": "50",
+  "section": "Capacity"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | **Yes** | Attribute name |
+| `value` | string | No | Attribute value |
+| `section` | string | No | Logical grouping for UI display |
+
+**The `section` field** enables Continuum to group attributes visually. Use consistent section names across your catalog:
+
+| Section | Example attributes |
+|---------|-------------------|
+| `Capacity` | CapacityGallons, CapacityBTUH, CapacityTons |
+| `Electrical` | Voltage, Phase, Hertz, Amperage, FLA |
+| `Efficiency` | UEF, SEER, SEER2, EER, EnergyFactor |
+| `Performance` | FirstHourRating, RecoveryRate, CFM |
+| `Physical` | Dimensions, Weight, MaterialType |
+| `Refrigerant` | RefrigerantType, RefrigerantChargeOz |
+| `Classification` | ERPMaterialGroup, ProductClass |
+| `Service` | InstallationNotes, MaintenanceInterval |
+
+---
+
+## PaginatedResponse
+
+Standard pagination wrapper for list endpoints.
+
+```json
+{
+  "pagination": {
+    "page": 1,
+    "pageSize": 100,
+    "totalRecords": 45230,
+    "totalPages": 453
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `page` | integer | Current page number |
+| `pageSize` | integer | Number of records per page |
+| `totalRecords` | integer | Total records matching the query |
+| `totalPages` | integer | Total number of pages |
+
+---
+
+## Error response
+
+All errors follow this structure. See [Error handling](/getting-started/error-handling) for full details and examples.
+
+```json
+{
+  "error": "UNIT_NOT_FOUND",
+  "message": "No unit found for serial number XYZ999",
+  "details": {}
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `error` | string | Machine-readable error code |
+| `message` | string | Human-readable description |
+| `details` | object | Optional additional context |

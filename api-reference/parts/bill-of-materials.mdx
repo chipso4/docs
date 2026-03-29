@@ -1,0 +1,54 @@
+---
+title: "Bill of materials"
+description: "GET /v1/bill-of-materials — Simplified BOM for the claims parts-selection step."
+---
+
+## `GET /v1/bill-of-materials`
+
+Retrieve the BOM for a serial/model in the context of warranty claims. Returns a simplified parts list optimized for the claims parts-selection step — focused on part identification rather than full specs.
+
+<Note>
+For the full BOM with specs, images, and cross-references, use [`GET /v1/units/{serial_number}/parts`](/api-reference/unit-data/unit-parts).
+</Note>
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `SerialNumber` | string | **Yes** | The unit's serial number |
+| `ModelNumber` | string | No | Model number (required if serial maps to multiple models) |
+
+### Response `200 OK`
+
+```json
+{
+  "serialNumber": "ABC123456789",
+  "modelNumber": "EN6-50-DORT",
+  "parts": [
+    {
+      "partNumber": "SP20042",
+      "description": "K,ANODE,29\",3/4\"NPT,.75\"DIA,ALUMINUM",
+      "partType": "anode",
+      "crossReferences": [
+        { "referenceType": "supersedes", "partNumber": "SP20041" }
+      ]
+    },
+    {
+      "partNumber": "SP10869GH",
+      "description": "ELEMENT,SCREW-IN,4500W,240V,COPPER,HIGH DENSITY",
+      "partType": "element",
+      "crossReferences": []
+    },
+    {
+      "partNumber": "SP8346",
+      "description": "THERMOSTAT,UPPER,SNAP-DISC,170F",
+      "partType": "thermostat",
+      "crossReferences": []
+    }
+  ]
+}
+```
+
+### Used in
+
+- [Claims processing](/process-flows/claims-processing) — Phase 2, failure identification

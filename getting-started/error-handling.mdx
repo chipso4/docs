@@ -1,0 +1,80 @@
+---
+title: "Error handling"
+description: "Standard error response format and HTTP status codes for all endpoints."
+---
+
+## Error response format
+
+All error responses follow this structure:
+
+```json
+{
+  "error": "ERROR_CODE",
+  "message": "Human-readable description of what went wrong",
+  "details": {}
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `error` | string | Machine-readable error code (constant, suitable for programmatic handling) |
+| `message` | string | Human-readable description (may vary, do not parse programmatically) |
+| `details` | object | Optional additional context about the error |
+
+## HTTP status codes
+
+| Status | Error Code | When to use |
+|--------|------------|-------------|
+| `400` | `INVALID_REQUEST` | Malformed request body, missing required query parameters, or invalid parameter values |
+| `401` | `UNAUTHORIZED` | Missing `Authorization` header, expired token, or invalid token |
+| `403` | `FORBIDDEN` | Valid token but insufficient permissions for this operation |
+| `404` | `NOT_FOUND` | The requested resource doesn't exist (e.g., invalid serial number, unknown part number, media ID not found) |
+| `409` | `CONFLICT` | Conflicting operation (e.g., attempting to sync a registration that already exists) |
+| `422` | `VALIDATION_ERROR` | Request is well-formed but fails business validation (e.g., registration for a serial that doesn't exist in the ERP) |
+| `429` | `RATE_LIMITED` | Too many requests. Include a `Retry-After` header with the number of seconds to wait. |
+| `500` | `INTERNAL_ERROR` | Unexpected server-side failure |
+| `503` | `SERVICE_UNAVAILABLE` | Temporary unavailability, typically because a backend system (ERP, database) is down or unreachable |
+
+## Examples
+
+### 404 — Serial number not found
+
+```json
+{
+  "error": "UNIT_NOT_FOUND",
+  "message": "No unit found for serial number XYZ999",
+  "details": {}
+}
+```
+
+### 409 — Registration already exists
+
+```json
+{
+  "error": "ALREADY_REGISTERED",
+  "message": "Serial number ABC123456789 is already registered.",
+  "details": {
+    "existingRegistrationDate": "2023-12-01T00:00:00Z",
+    "registeredOwner": "John Doe"
+  }
+}
+```
+
+### 503 — Backend system unavailable
+
+```json
+{
+  "error": "SERVICE_UNAVAILABLE",
+  "message": "ERP system is temporarily unavailable. Please retry.",
+  "details": {
+    "retryAfterSeconds": 60
+  }
+}
+```
+
+## Best practices
+
+- **Be specific with error codes.** Use descriptive codes like `UNIT_NOT_FOUND` or `ALREADY_REGISTERED` rather than generic codes. This helps Continuum display meaningful messages to end users.
+- **Include `details` when helpful.** For a `409 Conflict`, include the existing registration date. For a `422 Validation Error`, include which field failed validation.
+- **Use `503` for transient failures.** If your ERP goes down temporarily, return `503` so Continuum knows to retry rather than treating it as a permanent error.
+- **Set `Retry-After` on rate limits.** If you return `429`, include a `Retry-After` header so Continuum can back off appropriately.

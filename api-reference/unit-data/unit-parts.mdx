@@ -1,0 +1,76 @@
+---
+title: "Unit parts (BOM)"
+description: "GET /v1/units/{serial_number}/parts — Bill of materials with specs, images, and cross-references."
+---
+
+## `GET /v1/units/{serial_number}/parts`
+
+Return the bill of materials for a unit — serviceable replacement parts with images, specifications, cross-references, and warranty coverage status.
+
+### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `serial_number` | string | **Yes** | The unit's serial number |
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `include_images` | boolean | No | Include inline image URLs (default: `true`) |
+| `in_stock_only` | boolean | No | Filter to in-stock parts only |
+| `serviceable_only` | boolean | No | Filter to serviceable/replaceable parts (default: `true`) |
+
+### Response `200 OK`
+
+```json
+{
+  "serialNumber": "ABC123456789",
+  "baseModel": "EN6-50-DORT",
+  "parts": [
+    {
+      "partNumber": "SP20042",
+      "description": "K,ANODE,29\",3/4\"NPT,.75\"DIA,ALUMINUM",
+      "crossReferences": [
+        { "referenceType": "supersedes", "partNumber": "SP20041", "description": "Previous version" },
+        { "referenceType": "brand_xref", "partNumber": "SP20042-RU", "brand": "Ruud" },
+        { "referenceType": "upc", "partNumber": "020352330426" }
+      ],
+      "quantity": 1,
+      "unitOfMeasure": "EA",
+      "partType": "anode",
+      "brand": "Rheem",
+      "isServiceable": true,
+      "isWarrantyCovered": true,
+      "warrantyExpirationDate": "2035-06-15",
+      "inStock": true,
+      "images": [
+        {
+          "id": "img-sp20042-01",
+          "mediaType": "image",
+          "category": "part_photo",
+          "url": "https://parts.example.com/images/SP20042_main.jpg",
+          "width": 800,
+          "height": 800
+        }
+      ],
+      "notes": null,
+      "replacementsAvailable": 2,
+      "extendedAttributes": [
+        { "name": "Dimensions", "value": "29.0\" × 0.75\"", "section": "Physical" },
+        { "name": "Weight", "value": "1.25 lbs", "section": "Physical" },
+        { "name": "MaterialType", "value": "Aluminum", "section": "Physical" },
+        { "name": "InstallationNotes", "value": "Requires 1-1/16\" socket.", "section": "Service" }
+      ]
+    }
+  ],
+  "totalParts": 8
+}
+```
+
+Parts use `crossReferences` for supersession and brand cross-references, and `extendedAttributes` for specifications. See [Parts data types](/data-types/parts) for full schema details.
+
+### Used in
+
+- [Warranty verification](/process-flows/warranty-verification) — Replacement parts display
+- [Claims processing](/process-flows/claims-processing) — Parts selection

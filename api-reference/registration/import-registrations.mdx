@@ -1,0 +1,94 @@
+---
+title: "Import registrations"
+description: "GET /v1/import/registrations — Bulk export of historical warranty registrations for initial data load."
+---
+
+## `GET /v1/import/registrations`
+
+Bulk export existing warranty registration data from your legacy systems. Powers the one-time initial data load and ongoing incremental sync so Continuum starts with the full registration history.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `since` | ISO 8601 date | No | Only return registrations created/updated after this date (for incremental sync) |
+| `page` | integer | No | Page number (default: 1) |
+| `page_size` | integer | No | Results per page (default: 100, max: 1000) |
+
+### Response `200 OK`
+
+```json
+{
+  "registrations": [
+    {
+      "serialNumber": "ABC123456789",
+      "modelNumber": "EN6-50-DORT",
+      "brand": "Rheem",
+      "registrationDate": "2022-06-15T00:00:00Z",
+      "purchaseDate": "2022-06-01",
+      "installDate": "2022-06-10",
+      "installationType": "Residential",
+      "distributor": {
+        "distributorId": "DIST-003",
+        "name": "Pro Water Systems Inc",
+        "accountNumber": "5678903"
+      },
+      "homeowner": {
+        "firstName": "Bob",
+        "lastName": "Johnson",
+        "email": "bob@example.com",
+        "phone": "555-111-2222",
+        "address": {
+          "address1": "789 Oak Ave",
+          "city": "Atlanta",
+          "stateCode": "GA",
+          "zip": "30301",
+          "countryCode": "US"
+        }
+      },
+      "warranty": {
+        "overallStatus": "active",
+        "effectiveDate": "2022-06-10"
+      },
+      "coverages": [
+        { "coverageType": "tank", "status": "active", "expirationDate": "2034-06-10", "coverageTermMonths": 144 },
+        { "coverageType": "parts", "status": "active", "expirationDate": "2034-06-10", "coverageTermMonths": 144 },
+        { "coverageType": "labor", "status": "expired", "expirationDate": "2023-06-10", "coverageTermMonths": 12 }
+      ]
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 100,
+    "totalRecords": 45230,
+    "totalPages": 453
+  }
+}
+```
+
+### Pagination
+
+Continuum calls this endpoint repeatedly with increasing page numbers until all pages are consumed:
+
+```
+GET /v1/import/registrations?page=1&page_size=100
+GET /v1/import/registrations?page=2&page_size=100
+...
+GET /v1/import/registrations?page=453&page_size=100
+```
+
+For incremental sync after the initial load:
+
+```
+GET /v1/import/registrations?since=2026-03-01T00:00:00Z&page=1&page_size=100
+```
+
+### Implementation notes
+
+- **Include coverage tiers** in each record so Continuum can display accurate warranty status without re-calling entitlement for every imported unit.
+- **Timeout:** Continuum allows up to 60 seconds for import responses (longer than the standard 30-second timeout).
+- **Idempotency:** Continuum handles duplicates gracefully — the most recent data wins.
+
+### Used in
+
+- [Historical import](/process-flows/historical-import) — Initial data load and incremental sync

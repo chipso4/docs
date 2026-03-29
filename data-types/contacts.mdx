@@ -1,0 +1,137 @@
+---
+title: "Contacts"
+description: "HomeownerInfo, ContractorInfo, DistributorInfo, and ClaimContactInfo."
+---
+
+## HomeownerInfo
+
+The end consumer / homeowner who owns the product.
+
+```json
+{
+  "id": "HO-12345",
+  "businessName": null,
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jane.doe@email.com",
+  "phone": "555-987-6543",
+  "locationId": null,
+  "address": {
+    "address1": "123 Main St",
+    "city": "Nashville",
+    "stateCode": "TN",
+    "zip": "37201",
+    "countryCode": "US"
+  }
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | No | Manufacturer's internal homeowner ID |
+| `businessName` | string | No | Business name (for commercial installations) |
+| `firstName` | string | No | First name |
+| `lastName` | string | No | Last name |
+| `email` | string | No | Email address |
+| `phone` | string | No | Phone number |
+| `locationId` | string | No | Reference to a location record |
+| `address` | [Address](/data-types/core-objects#address) | No | Homeowner's address |
+
+---
+
+## ContractorInfo
+
+A licensed professional who installs or services the product.
+
+```json
+{
+  "id": "CONTR-042",
+  "firstName": "John",
+  "lastName": "Smith",
+  "companyName": "Smith Plumbing LLC",
+  "email": "john@smithplumbing.com",
+  "phone": "555-123-4567",
+  "licenseNumber": "PL-2023-45678",
+  "isCertified": true,
+  "certifications": ["Rheem Certified Pro", "Tankless Specialist"],
+  "locationId": null,
+  "address": {
+    "address1": "456 Trade St",
+    "city": "Houston",
+    "stateCode": "TX",
+    "zip": "77001",
+    "countryCode": "US"
+  }
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | No | Manufacturer's internal contractor ID |
+| `firstName` | string | No | Contact first name |
+| `lastName` | string | No | Contact last name |
+| `companyName` | string | No | Business name |
+| `email` | string | No | Email address |
+| `phone` | string | No | Phone number |
+| `licenseNumber` | string | No | Trade license number |
+| `isCertified` | boolean | No | Certified by this manufacturer for warranty work |
+| `certifications` | string[] | No | Manufacturer-specific certifications |
+| `locationId` | string | No | Reference to a location record |
+| `address` | [Address](/data-types/core-objects#address) | No | Business address |
+
+---
+
+## DistributorInfo
+
+The distributor / wholesaler that sold the unit.
+
+```json
+{
+  "distributorId": "DIST-001",
+  "name": "Premier Plumbing Supply",
+  "accountNumber": "5678901",
+  "purchaseDate": "2023-03-18",
+  "address": {
+    "address1": "500 Commerce Blvd",
+    "city": "Nashville",
+    "stateCode": "TN",
+    "zip": "37210"
+  },
+  "phone": "615-555-0100",
+  "email": "orders@premierplumbing.com"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `distributorId` | string | No | Manufacturer's internal distributor ID |
+| `name` | string | No | Business name |
+| `accountNumber` | string | No | Account number with the manufacturer |
+| `purchaseDate` | date | No | Date the distributor received the unit |
+| `address` | [Address](/data-types/core-objects#address) | No | Distributor address |
+| `phone` | string | No | Phone number |
+| `email` | string | No | Email address |
+
+---
+
+## ClaimContactInfo
+
+The person submitting or managing a warranty claim. May be different from the homeowner or contractor.
+
+```json
+{
+  "id": "CC-001",
+  "firstName": "Mike",
+  "lastName": "Wilson",
+  "email": "mike@hvacservices.com",
+  "phone": "555-444-3333"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | No | Contact ID |
+| `firstName` | string | No | First name |
+| `lastName` | string | No | Last name |
+| `email` | string | No | Email address |
+| `phone` | string | No | Phone number |

@@ -1,0 +1,45 @@
+---
+title: "Get media by ID"
+description: "GET /v1/media/{id} — Retrieve a specific media item by its unique identifier."
+---
+
+## `GET /v1/media/{id}`
+
+Retrieve a specific media item by its unique ID. Use when you already have a media ID from a previous response and need the full details or a direct download link.
+
+### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | **Yes** | The unique media identifier |
+
+### Response `200 OK`
+
+```json
+{
+  "id": "doc-001",
+  "title": "Installation Guide",
+  "filename": "EN6-50-DORT_Installation_Guide.pdf",
+  "mediaType": "document",
+  "category": "installation_guide",
+  "url": "https://docs.example.com/EN6-50-DORT_Installation_Guide.pdf",
+  "previewUrl": "https://docs.example.com/previews/doc-001-thumb.jpg",
+  "mimeType": "application/pdf",
+  "fileSizeBytes": 2621440,
+  "pageCount": 24,
+  "lastUpdated": "2024-06-01",
+  "language": "en",
+  "associatedModels": ["EN6-50-DORT", "EN6-40-DORT"],
+  "associatedPartNumbers": [],
+  "extendedAttributes": []
+}
+```
+
+### Response `404 Not Found`
+
+```json
+{
+  "error": "NOT_FOUND",
+  "message": "No media found with ID doc-999"
+}
+```

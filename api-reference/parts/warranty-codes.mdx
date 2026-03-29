@@ -1,0 +1,80 @@
+---
+title: "Warranty codes"
+description: "GET /v1/products/warranty-codes — Hierarchical warranty disposition codes for classifying part failures."
+---
+
+## `GET /v1/products/warranty-codes`
+
+Retrieve the hierarchical warranty disposition codes for a given part. These codes classify why a part failed and are organized in a tree structure: general reason → specific reason → detail.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `SerialNumber` | string | No | Serial number (may affect available codes) |
+| `ModelNumber` | string | No | Model number |
+| `PartNumber` | string | No | The specific part to get codes for |
+
+### Response `200 OK`
+
+```json
+{
+  "serialNumberRequired": false,
+  "reasonCodes": [
+    {
+      "id": "ELEC",
+      "description": "Electrical Failure",
+      "fullPath": "Electrical Failure",
+      "idPath": "ELEC",
+      "children": [
+        {
+          "id": "THERM",
+          "description": "Thermostat",
+          "fullPath": "Electrical Failure > Thermostat",
+          "idPath": "ELEC/THERM",
+          "children": [
+            {
+              "id": "FAIL-REG",
+              "description": "Failed to regulate temperature",
+              "fullPath": "Electrical Failure > Thermostat > Failed to regulate temperature",
+              "idPath": "ELEC/THERM/FAIL-REG",
+              "requiresAttachment": false,
+              "children": []
+            },
+            {
+              "id": "NO-RESP",
+              "description": "Not responding / no power",
+              "fullPath": "Electrical Failure > Thermostat > Not responding / no power",
+              "idPath": "ELEC/THERM/NO-RESP",
+              "requiresAttachment": true,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "LEAK",
+      "description": "Leak / Water Damage",
+      "fullPath": "Leak / Water Damage",
+      "idPath": "LEAK",
+      "children": [
+        {
+          "id": "TANK-LEAK",
+          "description": "Tank leak",
+          "requiresAttachment": true,
+          "children": []
+        }
+      ]
+    }
+  ]
+}
+```
+
+The contractor navigates this tree to classify the failure. Leaf nodes (empty `children`) are selectable codes. The `requiresAttachment` flag tells Continuum whether to prompt for a supporting photo or document when this code is selected.
+
+See [`WarrantyCode`](/data-types/parts) for the full type definition.
+
+### Used in
+
+- [Claims processing](/process-flows/claims-processing) — Phase 2, failure classification

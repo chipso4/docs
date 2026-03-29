@@ -1,0 +1,69 @@
+---
+title: "Authentication"
+description: "OAuth2 client credentials flow for authenticating Continuum's API calls."
+---
+
+All API calls from Continuum are authenticated using **OAuth2 client credentials**. Before making any data requests, Continuum obtains a bearer token from your token endpoint.
+
+## Flow
+
+1. Continuum sends a `POST` to `/v1/oauth2/token` with its client ID and secret.
+2. Your server validates the credentials and returns a bearer token.
+3. Continuum includes the token in the `Authorization` header of all subsequent requests.
+4. Before the token expires, Continuum requests a new one.
+
+## Token endpoint
+
+### `POST /v1/oauth2/token`
+
+**Content-Type:** `application/json`
+
+#### Request
+
+```json
+{
+  "grant_type": "client_credentials",
+  "client_id": "continuum-warranty-hub",
+  "client_secret": "your-secret-here",
+  "scope": "warranty:read warranty:write"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `grant_type` | string | **Yes** | Must be `"client_credentials"` |
+| `client_id` | string | **Yes** | Client identifier issued to Continuum |
+| `client_secret` | string | **Yes** | Client secret |
+| `scope` | string | No | Requested scope(s), space-delimited |
+
+#### Response `200 OK`
+
+```json
+{
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "scope": "warranty:read warranty:write"
+}
+```
+
+#### Usage in subsequent requests
+
+```
+GET /v1/units/ABC123456789
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+## Implementation notes
+
+- **Token lifetime:** We recommend tokens with a 1-hour lifetime (`expires_in: 3600`). Shorter is fine; longer than 24 hours is not recommended.
+- **Concurrent tokens:** Continuum may request a new token before the current one expires. Your server should support multiple valid tokens simultaneously during the overlap window.
+- **Scopes:** Scopes are optional but recommended if you want fine-grained access control (e.g., `warranty:read` for lookups vs. `warranty:write` for registration sync).
+- **Error response:** Return HTTP `401 Unauthorized` with the standard error body for invalid credentials.
+
+```json
+{
+  "error": "UNAUTHORIZED",
+  "message": "Invalid client credentials"
+}
+```

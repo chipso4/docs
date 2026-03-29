@@ -1,97 +1,183 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Manufacturer Warranty Hub"
+sidebarTitle: "Introduction"
+description: "The integration guide for manufacturers connecting to Continuum's warranty automation platform."
 ---
 
-## Setting up
+<Note>
+**This is a reverse integration guide.** It defines the API endpoints your team will build and host so that Continuum can connect to your systems. Think of it as the contract between us — we handle the consumer experience, and your middleware provides the data.
+</Note>
 
-Get your documentation site up and running in minutes.
+## The 30-second version
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
+Continuum runs the consumer-facing warranty portal for your products. Consumers register, check coverage, and file claims through our UI. Behind the scenes, we call **your** middleware API to retrieve serial data, warranty entitlements, parts, and documents from your systems.
+
+You build the middleware. We handle the rest.
+
+```
+Consumer → Continuum → Your API → Your ERP
+```
+
+<CardGroup cols={2}>
+  <Card title="23" icon="plug">
+    Endpoints to implement
+  </Card>
+  <Card title="OAuth2" icon="lock">
+    Client credentials auth
+  </Card>
+</CardGroup>
+
+---
+
+## Getting started
+
+Your middleware is a JSON REST API that translates between Continuum's standard contract and your internal systems. It doesn't matter if you run SAP, Oracle, NetSuite, Epicor, or a custom database — your middleware abstracts that behind a consistent interface.
+
+<Frame>
+  <img src="/images/architecture-diagram.svg" alt="Integration architecture: Consumer, Contractor, and Distributor connect to Continuum, which connects via HTTPS to your middleware API, which connects to your ERP, Warranty DB, and Document storage." />
+</Frame>
+
+<Tabs>
+  <Tab title="What Continuum handles">
+    - Consumer-facing web portal and contractor portal
+    - Product registration UI and data storage
+    - Claims creation, validation, tracking, and resolution
+    - Attachment uploads and document management
+    - Claim status notifications and workflow automation
+    - Historical data import and incremental sync
+  </Tab>
+  <Tab title="What you implement">
+    - Serial number validation and unit lookups
+    - Warranty entitlement checks with coverage tiers
+    - Bill of materials and replacement parts
+    - Warranty disposition codes (failure classification)
+    - Product media (manuals, images, diagrams)
+    - Contractor directory and distributor data
+    - Labor rate schedules
+    - Registration write-back to your warranty database
+  </Tab>
+</Tabs>
+
+---
+
+## Start here
+
+<CardGroup cols={2}>
+
+<Card title="Understand the architecture" icon="sitemap" href="/overview/architecture" horizontal>
+  See where your middleware sits and what systems it connects to.
 </Card>
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
-
-## Create beautiful pages
-
-Everything you need to create world-class documentation.
-
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
-
-## Need inspiration?
-
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
+<Card title="Learn the key concepts" icon="lightbulb" href="/overview/key-concepts" horizontal>
+  Coverage tiers, effective dates, part cross-references, and the extensibility model.
 </Card>
+
+<Card title="Follow the implementation guide" icon="rocket" href="/getting-started/implementation-guide" horizontal>
+  Step-by-step walkthrough of building your middleware from scratch.
+</Card>
+
+<Card title="Browse the API reference" icon="code" href="/api-reference/overview" horizontal>
+  Every endpoint with parameters, response schemas, and examples.
+</Card>
+
+</CardGroup>
+
+---
+
+## The workflows your API powers
+
+Every call Continuum makes to your middleware happens within one of these workflows. Each page shows the sequence of API calls, what data flows, and which endpoints are involved.
+
+<AccordionGroup>
+  <Accordion title="Product registration" icon="clipboard-check" defaultOpen>
+    A consumer enters a serial number → Continuum validates it against your ERP, auto-fills product and distributor fields, and syncs the completed registration back to your warranty database.
+
+    **Your endpoints called:** `validate-unit` → `units/{serial}` → `units/{serial}/distributor` → `contractors` → `registrations/sync`
+
+    [View full flow →](/process-flows/registration)
+  </Accordion>
+
+  <Accordion title="Warranty verification" icon="shield-check">
+    Anyone looks up a serial number → Continuum retrieves unit details and displays warranty coverage broken out by tier (tank, parts, labor), with replacement parts and product documentation.
+
+    **Your endpoints called:** `units/{serial}` → `warranty-coverages` → `units/{serial}/parts` → `media`
+
+    [View full flow →](/process-flows/warranty-verification)
+  </Accordion>
+
+  <Accordion title="Claims processing" icon="file-invoice">
+    A contractor diagnoses a failure → Continuum checks entitlement, presents the BOM for part selection, retrieves warranty codes for failure classification, and finds replacement parts — then manages the claim lifecycle internally.
+
+    **Your endpoints called:** `validate-unit` → `entitlement-information` → `bill-of-materials` → `warranty-codes` → `replacements`
+
+    [View full flow →](/process-flows/claims-processing)
+  </Accordion>
+
+  <Accordion title="Media center" icon="folder-open">
+    A consumer or contractor searches for product documentation → Continuum retrieves manuals, spec sheets, wiring diagrams, images, and other media from your systems via a unified media endpoint.
+
+    **Your endpoints called:** `media?model_number={model}` or `media?part_number={part}`
+
+    [View full flow →](/process-flows/media-center)
+  </Accordion>
+
+  <Accordion title="Historical import" icon="database">
+    On go-live, Continuum pulls your full registration history via paginated bulk export so the portal starts with complete data. After initial load, incremental syncs keep everything current.
+
+    **Your endpoints called:** `import/registrations?page=1&page_size=100`
+
+    [View full flow →](/process-flows/historical-import)
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Endpoint groups at a glance
+
+<CardGroup cols={3}>
+
+<Card title="Unit & product data" icon="box" href="/api-reference/unit-data/validate-unit">
+  6 endpoints — serial validation, unit details, entitlement, coverage tiers, BOM, distributor
+</Card>
+
+<Card title="Parts & BOM" icon="gear" href="/api-reference/parts/bill-of-materials">
+  4 endpoints — BOM for claims, cross-references, warranty codes, replacements
+</Card>
+
+<Card title="Media" icon="photo-film" href="/api-reference/media/get-media">
+  3 endpoints — unified docs/images/manuals by model or part, plus upload
+</Card>
+
+<Card title="Reference data" icon="database" href="/api-reference/reference-data/contractors">
+  6 endpoints — contractors, locations, distributors, customers, labor rates
+</Card>
+
+<Card title="Registration" icon="clipboard-check" href="/api-reference/registration/registration-sync">
+  2 endpoints — registration write-back and historical bulk import
+</Card>
+
+<Card title="Auth & health" icon="lock" href="/getting-started/authentication">
+  2 endpoints — OAuth2 token exchange and health check
+</Card>
+
+</CardGroup>
+
+---
+
+## Why this architecture?
+
+<Tabs>
+  <Tab title="For your IT team">
+    You own the middleware. That means you control security, data mapping, performance, and deployment. Continuum never has direct access to your ERP or databases. You can filter, transform, or redact any field before it leaves your network.
+  </Tab>
+  <Tab title="For your business">
+    Consumers get a modern, branded warranty portal without you building one from scratch. Claims that used to take 20+ minutes of manual data entry now process automatically. Contractors stop calling your 1-800 number to check serial numbers.
+  </Tab>
+  <Tab title="For your customers">
+    Homeowners register products in minutes instead of mailing in cards. Contractors file warranty claims on-site instead of driving to the distributor with paperwork. Everyone can check coverage status instantly, 24/7.
+  </Tab>
+</Tabs>
+
+<Tip>
+**Ready to start?** Jump to the [implementation guide](/getting-started/implementation-guide) for a step-by-step walkthrough, or go straight to the [API reference](/api-reference/overview) if you want to dive into the endpoints.
+</Tip>

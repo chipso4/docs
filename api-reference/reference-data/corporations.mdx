@@ -1,0 +1,27 @@
+---
+title: "Corporations"
+description: "GET /v1/corporations — List of authorized distributors in your network."
+---
+
+## `GET /v1/corporations`
+
+Retrieve the list of authorized distributors (corporations) in your network.
+
+### Response `200 OK`
+
+```json
+{
+  "corporations": [
+    {
+      "corporationId": "CORP-001",
+      "corporationName": "Premier Plumbing Supply",
+      "extendedAttributes": []
+    },
+    {
+      "corporationId": "CORP-002",
+      "corporationName": "National Wholesale Supply Co.",
+      "extendedAttributes": []
+    }
+  ]
+}
+```

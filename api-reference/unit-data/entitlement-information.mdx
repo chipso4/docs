@@ -1,0 +1,124 @@
+---
+title: "Entitlement information"
+description: "GET /v1/entitlement-information — Detailed warranty entitlement with per-tier coverage, labor rates, and homeowner data."
+---
+
+## `GET /v1/entitlement-information`
+
+The primary entitlement check used before filing a warranty claim. Returns detailed warranty coverage tiers, applicable labor rates, homeowner information, and purchaser details.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `SerialNumber` | string | **Yes** | The unit's serial number |
+| `ModelNumber` | string | No | Model number (required if serial maps to multiple models) |
+| `RegisteredOwnerLastName` | string | No | Last name of registered owner (for ownership verification) |
+| `StateCode` | string | No | State code of installation (may affect coverage terms) |
+| `CustomerId` | string | No | Distributor/customer account ID |
+| `InstallationType` | string | No | `"Residential"`, `"Commercial"`, `"MultiFamily"` |
+
+### Response `200 OK`
+
+```json
+{
+  "serialNumberIsValid": true,
+  "warrantyIsValid": true,
+  "serialNo": "ABC123456789",
+  "modelId": "EN6-50-DORT",
+  "brand": "Rheem",
+  "installationType": "Residential",
+  "installDate": "2023-06-15T00:00:00Z",
+  "registrationDate": "2023-06-20T00:00:00Z",
+  "isSerialNumberRegistered": true,
+  "customerIdIsValid": true,
+  "coverages": [
+    {
+      "coverageType": "tank",
+      "coverageLabel": "Tank & Heat Exchanger",
+      "status": "active",
+      "effectiveDate": "2023-06-15",
+      "expirationDate": "2035-06-15",
+      "coverageTermMonths": 144,
+      "isProRated": true,
+      "proRatedSchedule": {
+        "fullCoverageMonths": 72,
+        "tiers": [
+          { "fromMonth": 1, "toMonth": 72, "reimbursementPercent": 100.0, "description": "Full replacement" },
+          { "fromMonth": 73, "toMonth": 108, "reimbursementPercent": 50.0, "description": "50% credit" },
+          { "fromMonth": 109, "toMonth": 144, "reimbursementPercent": 25.0, "description": "25% credit" }
+        ]
+      }
+    },
+    {
+      "coverageType": "parts",
+      "coverageLabel": "Component Parts",
+      "status": "active",
+      "effectiveDate": "2023-06-15",
+      "expirationDate": "2035-06-15",
+      "coverageTermMonths": 144,
+      "isProRated": false
+    },
+    {
+      "coverageType": "labor",
+      "coverageLabel": "Labor",
+      "status": "expired",
+      "effectiveDate": "2023-06-15",
+      "expirationDate": "2024-06-15",
+      "coverageTermMonths": 12,
+      "isProRated": false
+    }
+  ],
+  "laborRates": {
+    "effectiveDate": "2025-01-01",
+    "expirationDate": "2025-12-31",
+    "extendedAttributes": [
+      { "name": "LaborRate", "value": "85.00", "section": "Labor" },
+      { "name": "LaborRateUOM", "value": "per_hour", "section": "Labor" },
+      { "name": "MaxLaborHours", "value": "2.0", "section": "Labor" },
+      { "name": "TravelRatePerMile", "value": "0.67", "section": "Travel" },
+      { "name": "MaxTravelMiles", "value": "50", "section": "Travel" },
+      { "name": "RefrigerantAllowance", "value": "75.00", "section": "Allowances" }
+    ]
+  },
+  "claimSubmissionDeadlineDays": 30,
+  "homeowner": {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "address": {
+      "address1": "123 Main St",
+      "city": "Nashville",
+      "stateCode": "TN",
+      "zip": "37201",
+      "countryCode": "US"
+    },
+    "email": "jane.doe@email.com",
+    "phone": "555-987-6543"
+  },
+  "purchaserDetails": {
+    "distributorName": "Premier Plumbing Supply",
+    "address": {
+      "address1": "500 Commerce Blvd",
+      "city": "Nashville",
+      "stateCode": "TN",
+      "zip": "37210"
+    }
+  },
+  "extendedAttributes": []
+}
+```
+
+### Key response fields
+
+| Field | Description |
+|-------|-------------|
+| `coverages` | Array of [`WarrantyCoverage`](/data-types/warranty) objects — one per coverage tier. This is the most important field for claim entitlement decisions. |
+| `laborRates` | Applicable [`LaborRateSchedule`](/data-types/warranty) with rate data in `extendedAttributes`. |
+| `claimSubmissionDeadlineDays` | How many days from the failure date a claim must be submitted. |
+| `homeowner` | Registered homeowner info — pre-fills the claims form. |
+| `purchaserDetails` | Distributor that sold the unit. |
+
+### Used in
+
+- [Claims processing](/process-flows/claims-processing) — Phase 1
+- [Warranty verification](/process-flows/warranty-verification) — Coverage display

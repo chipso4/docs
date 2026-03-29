@@ -1,0 +1,84 @@
+---
+title: "Key concepts"
+description: "Core concepts you'll encounter throughout the integration — warranty effective dates, coverage tiers, part cross-references, and the extensibility model."
+---
+
+## Warranty effective date
+
+The warranty effective date is the starting point for all coverage calculations. It is determined by:
+
+1. **Installation date** — if the product has been registered and the installation date is properly documented, the warranty starts on the install date.
+2. **Manufacture date + 90 days** — if no installation date is recorded, most manufacturers default to the manufacture date plus 90 days as the effective date.
+
+This makes product registration critically important. Without registration, the consumer loses the time between manufacture and actual installation — which can be weeks or months.
+
+## Coverage tiers
+
+Manufacturers rarely have a single "warranty expiration date." Coverage is tiered, with different components covered for different durations:
+
+| Tier | Typical coverage | Example |
+|------|-----------------|---------|
+| Tank / Heat Exchanger | 6–15 years | Full replacement for 6 years, pro-rated credit years 7–12 |
+| Component Parts | 5–12 years | Free replacement parts for the coverage period |
+| Labor | 1–3 years | Reimbursement for contractor labor during first year only |
+| Component-specific | Varies | Specific components (e.g., compressor) may have their own term |
+
+Your API should return coverage as an array of `WarrantyCoverage` objects, each with its own status, dates, and terms. Continuum uses this to display accurate coverage information and to validate claim entitlement at the component level.
+
+Coverage may also differ based on **installation type** — residential installations often get longer coverage than commercial ones.
+
+## Pro-rated coverage
+
+Some coverage tiers transition from full replacement to pro-rated reimbursement after a certain period. For example, a 12-year tank warranty might provide full replacement for the first 6 years, then 50% credit for years 7–9, and 25% credit for years 10–12.
+
+Your API can express this through the `ProRatedSchedule` object on any coverage tier.
+
+## Registration impact on warranty
+
+Many manufacturers extend warranty coverage for registered products or require registration to activate the full warranty. Your entitlement response should indicate whether the unit is registered and whether registration affects the coverage terms.
+
+## Part cross-references
+
+A single physical part is often known by multiple identifiers across the supply chain. As a manufacturer, the most common cross-reference scenarios are:
+
+- **Supersession** — a new part number replaces an older one (e.g., SP20042 supersedes SP20041)
+- **Brand cross-reference** — the same part sold under different brand names within your portfolio (e.g., Rheem SP20042 = Ruud SP20042-RU)
+- **OEM cross-reference** — the component supplier's own part number (e.g., your thermostat is Honeywell WV8840A1000)
+- **UPC / GTIN** — the universal barcode identifier
+
+Your API exposes these through `crossReferences` on part objects and through the dedicated `/v1/parts/cross-reference` endpoint.
+
+## The `extendedAttributes` pattern
+
+Every entity in this API supports an `extendedAttributes` array — a flexible collection of name-value pairs for data that doesn't fit the standard schema.
+
+```json
+{
+  "name": "CapacityGallons",
+  "value": "50",
+  "section": "Capacity"
+}
+```
+
+This is the primary mechanism for:
+
+- **Product specifications** — technical details specific to your product category (water heater specs are different from HVAC specs)
+- **Industry-specific data** — fields unique to your industry
+- **ERP-specific fields** — internal codes and classifications
+- **Rate structures** — labor and travel reimbursement details that vary by manufacturer
+
+The `section` field enables grouping in the UI. Use consistent section names across your catalog (e.g., always "Electrical" not sometimes "Electrical" and sometimes "Power"). Continuum renders these as grouped attribute tables.
+
+## Unified media model
+
+All media — documents, images, manuals, diagrams, videos — is accessed through a single `/v1/media` endpoint. You can query by model number (to get product documentation) or by part number (to get part images and diagrams). Each media item has an `id` that can also be used for direct access via `/v1/media/{id}`.
+
+Your middleware is responsible for sourcing media from whatever internal system stores it. Continuum only needs URLs in the response.
+
+## ERP-agnostic design
+
+This API is intentionally ERP-agnostic:
+
+- **String-typed classifications** — Fields like `coverageType`, `installationType`, `partType`, and `locationType` are strings rather than fixed enums. Your middleware maps your ERP's internal values to whatever string representation makes sense.
+- **No proprietary IDs required** — Parts use manufacturer part numbers (MPNs), not system-specific GUIDs. Units use serial numbers. Documents use stable IDs you control.
+- **Flexible extensibility** — Anything that doesn't fit the standard fields goes in `extendedAttributes`. This means the schema works whether you run SAP, Oracle, NetSuite, Epicor, or a custom system.

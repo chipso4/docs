@@ -1,0 +1,32 @@
+---
+title: "Locations"
+description: "GET /v1/locations — Registered warranty service locations."
+---
+
+## `GET /v1/locations`
+
+Retrieve registered warranty service locations — warehouses, branches, distribution centers, and service centers.
+
+### Response `200 OK`
+
+```json
+{
+  "locations": [
+    {
+      "locationId": "LOC-001",
+      "locationName": "Nashville Distribution Center",
+      "locationType": "distribution_center",
+      "address": {
+        "address1": "1200 Logistics Parkway",
+        "city": "Nashville",
+        "stateCode": "TN",
+        "zip": "37210",
+        "countryCode": "US"
+      },
+      "phone": "615-555-0200",
+      "email": "nashville@manufacturer.com",
+      "isActive": true
+    }
+  ]
+}
+```

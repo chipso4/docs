@@ -1,0 +1,55 @@
+---
+title: "Contractors"
+description: "GET /v1/contractors — Search the contractor directory for the registration and claims forms."
+---
+
+## `GET /v1/contractors`
+
+Search the contractor database. Used to populate the contractor selection dropdown during Product Registration and claims filing.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `search` | string | No | Free-text search on name/company |
+| `zip_code` | string | No | Filter by service area zip code |
+| `certified_only` | boolean | No | Only return contractors certified by this manufacturer |
+| `page` | integer | No | Page number (default: 1) |
+| `page_size` | integer | No | Results per page (default: 25) |
+
+### Response `200 OK`
+
+```json
+{
+  "contractors": [
+    {
+      "id": "CONTR-042",
+      "companyName": "Smith Plumbing LLC",
+      "firstName": "John",
+      "lastName": "Smith",
+      "phone": "555-123-4567",
+      "email": "john@smithplumbing.com",
+      "licenseNumber": "PL-2023-45678",
+      "isCertified": true,
+      "certifications": ["Rheem Certified Pro", "Tankless Specialist"],
+      "address": {
+        "address1": "456 Trade St",
+        "city": "Houston",
+        "stateCode": "TX",
+        "zip": "77001",
+        "countryCode": "US"
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 25,
+    "totalRecords": 1,
+    "totalPages": 1
+  }
+}
+```
+
+### Used in
+
+- [Product registration](/process-flows/registration) — Contractor selection dropdown

@@ -1,0 +1,48 @@
+---
+title: "Labor rates"
+description: "GET /v1/labor-rates — Labor and travel reimbursement rate schedules for warranty work."
+---
+
+## `GET /v1/labor-rates`
+
+Retrieve the applicable labor and travel reimbursement rate schedule. Rate structures vary widely between manufacturers — some use hourly rates with caps, others use flat rates, some include travel and refrigerant allowances. All rate data is carried in `extendedAttributes` to accommodate any structure.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `StateCode` | string | No | State code to determine regional rates |
+| `ZipCode` | string | No | Zip code for more precise regional lookup |
+| `InstallationType` | string | No | `"Residential"`, `"Commercial"`, `"MultiFamily"` |
+| `ClaimType` | string | No | Claim type code (if rates vary by claim type) |
+
+### Response `200 OK`
+
+```json
+{
+  "rates": [
+    {
+      "effectiveDate": "2025-01-01",
+      "expirationDate": "2025-12-31",
+      "extendedAttributes": [
+        { "name": "InstallationType", "value": "Residential", "section": "Scope" },
+        { "name": "Region", "value": "Southeast", "section": "Scope" },
+        { "name": "LaborRate", "value": "85.00", "section": "Labor" },
+        { "name": "LaborRateUOM", "value": "per_hour", "section": "Labor" },
+        { "name": "MaxLaborHours", "value": "2.0", "section": "Labor" },
+        { "name": "TravelRatePerMile", "value": "0.67", "section": "Travel" },
+        { "name": "MaxTravelMiles", "value": "50", "section": "Travel" },
+        { "name": "RefrigerantAllowance", "value": "75.00", "section": "Allowances" }
+      ]
+    }
+  ]
+}
+```
+
+<Note>
+Rate structures are intentionally flexible. Use whatever attributes match your reimbursement program. Continuum renders rate data grouped by the `section` field.
+</Note>
+
+### Used in
+
+- [Claims processing](/process-flows/claims-processing) — Contractor sees reimbursement rates before filing

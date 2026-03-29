@@ -1,0 +1,38 @@
+---
+title: "Unit distributor"
+description: "GET /v1/units/{serial_number}/distributor — Distributor that originally sold the unit."
+---
+
+## `GET /v1/units/{serial_number}/distributor`
+
+Return the distributor that originally purchased/sold the unit. Used to auto-fill distributor information during Product Registration.
+
+### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `serial_number` | string | **Yes** | The unit's serial number |
+
+### Response `200 OK`
+
+```json
+{
+  "distributorId": "DIST-001",
+  "name": "Premier Plumbing Supply",
+  "accountNumber": "5678901",
+  "purchaseDate": "2023-03-18",
+  "address": {
+    "address1": "500 Commerce Blvd",
+    "city": "Nashville",
+    "stateCode": "TN",
+    "zip": "37210",
+    "countryCode": "US"
+  },
+  "phone": "615-555-0100",
+  "email": "orders@premierplumbing.com"
+}
+```
+
+### Used in
+
+- [Product registration](/process-flows/registration) — Auto-fill distributor fields

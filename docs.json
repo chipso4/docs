@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Continuum Integration Docs",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#4F46E5",
+    "light": "#6366F1",
+    "dark": "#3730A3"
   },
   "favicon": "/favicon.svg",
   "navigation": {
@@ -14,55 +14,99 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Introduction",
             "pages": [
               "index",
-              "quickstart",
-              "development"
+              "overview/what-is-this",
+              "overview/architecture",
+              "overview/key-concepts"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Getting started",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "getting-started/implementation-guide",
+              "getting-started/authentication",
+              "getting-started/error-handling"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Process flows",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "process-flows/registration",
+              "process-flows/warranty-verification",
+              "process-flows/claims-processing",
+              "process-flows/media-center",
+              "process-flows/historical-import"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
-              "api-reference/introduction"
+              "api-reference/overview"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Unit & product data",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/unit-data/validate-unit",
+              "api-reference/unit-data/get-unit",
+              "api-reference/unit-data/entitlement-information",
+              "api-reference/unit-data/warranty-coverages",
+              "api-reference/unit-data/unit-parts",
+              "api-reference/unit-data/unit-distributor"
+            ]
+          },
+          {
+            "group": "Parts & BOM",
+            "pages": [
+              "api-reference/parts/bill-of-materials",
+              "api-reference/parts/cross-reference",
+              "api-reference/parts/warranty-codes",
+              "api-reference/parts/replacements"
+            ]
+          },
+          {
+            "group": "Media",
+            "pages": [
+              "api-reference/media/get-media",
+              "api-reference/media/get-media-by-id",
+              "api-reference/media/upload-media"
+            ]
+          },
+          {
+            "group": "Reference data",
+            "pages": [
+              "api-reference/reference-data/contractors",
+              "api-reference/reference-data/locations",
+              "api-reference/reference-data/corporations",
+              "api-reference/reference-data/corporation-details",
+              "api-reference/reference-data/corporation-customers",
+              "api-reference/reference-data/labor-rates"
+            ]
+          },
+          {
+            "group": "Registration & import",
+            "pages": [
+              "api-reference/registration/registration-sync",
+              "api-reference/registration/import-registrations"
+            ]
+          },
+          {
+            "group": "Data types",
+            "pages": [
+              "data-types/overview",
+              "data-types/core-objects",
+              "data-types/contacts",
+              "data-types/product-unit",
+              "data-types/warranty",
+              "data-types/parts",
+              "data-types/media-types"
             ]
           }
         ]
@@ -71,52 +115,39 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Website",
+          "href": "https://gocontinuum.ai",
+          "icon": "globe"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "Support",
+          "href": "mailto:integrations@gocontinuum.ai",
+          "icon": "envelope"
         }
       ]
     }
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png"
   },
   "navbar": {
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:integrations@gocontinuum.ai"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Book a Demo",
+      "href": "https://gocontinuum.ai/get-started"
     }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "linkedin": "https://linkedin.com/company/gocontinuum",
+      "website": "https://gocontinuum.ai"
     }
   }
 }

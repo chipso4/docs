@@ -1,0 +1,41 @@
+---
+title: "What is Continuum?"
+description: "Understand the platform, your role in the integration, and why this middleware layer matters."
+---
+
+## The problem
+
+Warranty processing in manufacturing — particularly for durable goods like water heaters, HVAC equipment, and appliances — is painfully manual. A typical warranty claim might involve a homeowner calling a toll-free number, a phone agent typing a serial number into a green-screen terminal, manually reading back coverage dates, issuing an authorization number over the phone, and eventually processing a paper claim form weeks later.
+
+This is slow, error-prone, and expensive for everyone involved.
+
+## What Continuum does
+
+Continuum is a warranty and returns automation platform. For the **Manufacturer Warranty Hub**, Continuum operates as the **consumer-facing warranty portal on your behalf**. Consumers, contractors, and distributors interact with Continuum's interface to:
+
+- **Register products** after purchase and installation
+- **Verify warranty status** by entering a serial number
+- **Browse replacement parts** with images and specifications
+- **Access product documentation** — manuals, wiring diagrams, spec sheets
+- **File warranty claims** with automated entitlement checks and parts selection
+- **Track claim status** through resolution
+
+Behind the scenes, Continuum calls into your systems through a middleware API to retrieve the data it needs and push updates back.
+
+## Your role
+
+You build and maintain the **middleware API layer** — the set of endpoints defined in this documentation. This middleware sits between Continuum and your systems of record (ERP, warranty database, legacy systems) and does two things:
+
+1. **Abstraction** — Decouples Continuum from the specifics of your backend. Whether you run SAP, Oracle, NetSuite, Epicor, or a custom system, Continuum sees the same JSON contract.
+
+2. **Control** — Your IT team owns the middleware. You decide what data flows, how fields map to your ERP, what validation happens, and how the API is secured. Continuum never has direct access to your internal systems.
+
+## Who uses the portal
+
+| Actor | What they do | Where |
+|-------|-------------|-------|
+| **Consumer / Homeowner** | Registers products, checks warranty status, requests service | Continuum web portal |
+| **Contractor** | Diagnoses failures, files warranty claims, selects replacement parts | Continuum contractor portal |
+| **Distributor** | Processes warranty exchanges, verifies entitlement at the counter | Continuum + their own systems |
+| **Your IT team** | Builds and maintains the middleware API | Your infrastructure |
+| **Continuum** | Orchestrates the process, provides the UI, calls your API | Continuum platform |

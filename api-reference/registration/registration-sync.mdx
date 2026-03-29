@@ -1,0 +1,95 @@
+---
+title: "Registration sync"
+description: "POST /v1/registrations/sync — Push a product registration from Continuum to your warranty system."
+---
+
+## `POST /v1/registrations/sync`
+
+Push a product registration from Continuum back to your system. This ensures your warranty database reflects that the unit has been registered, which may activate or extend warranty coverage.
+
+### Request body
+
+```json
+{
+  "serialNumber": "ABC123456789",
+  "modelNumber": "EN6-50-DORT",
+  "registrationDate": "2024-01-15T14:30:00Z",
+  "installDate": "2024-01-10",
+  "installationType": "Residential",
+  "homeowner": {
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "email": "jane.doe@email.com",
+    "phone": "555-987-6543",
+    "address": {
+      "address1": "123 Main St",
+      "city": "Nashville",
+      "stateCode": "TN",
+      "zip": "37201",
+      "countryCode": "US"
+    }
+  },
+  "contractor": {
+    "id": "CONTR-042",
+    "companyName": "Smith Plumbing LLC"
+  },
+  "distributor": {
+    "distributorId": "DIST-001",
+    "name": "Premier Plumbing Supply",
+    "purchaseDate": "2023-12-20"
+  },
+  "purchaseDate": "2024-01-05"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `serialNumber` | string | **Yes** | The unit's serial number |
+| `modelNumber` | string | **Yes** | Model number |
+| `registrationDate` | datetime | **Yes** | When the registration was submitted |
+| `installDate` | date | No | Installation date (becomes the warranty effective date) |
+| `installationType` | string | No | `"Residential"`, `"Commercial"`, `"MultiFamily"` |
+| `homeowner` | HomeownerInfo | No | Registered homeowner details |
+| `contractor` | ContractorInfo | No | Installing contractor |
+| `distributor` | DistributorInfo | No | Distributor that sold the unit |
+| `purchaseDate` | date | No | Consumer's purchase date |
+
+### Response `200 OK`
+
+```json
+{
+  "synced": true,
+  "manufacturerRegistrationId": "REG-MFR-2024-00456",
+  "warrantyActivated": true,
+  "coverageAdjustments": [
+    {
+      "coverageType": "tank",
+      "previousExpirationDate": null,
+      "newExpirationDate": "2036-01-10",
+      "reason": "Registration activated full warranty from install date"
+    }
+  ],
+  "message": "Registration synced successfully. Warranty activated from install date."
+}
+```
+
+The `coverageAdjustments` array tells Continuum if and how the registration changed the warranty coverage. This lets the portal immediately display updated warranty info without re-calling the entitlement endpoint.
+
+### Response `409 Conflict`
+
+Returned if the serial number is already registered in your system.
+
+```json
+{
+  "error": "ALREADY_REGISTERED",
+  "message": "Serial number ABC123456789 is already registered.",
+  "details": {
+    "existingRegistrationDate": "2023-12-01T00:00:00Z",
+    "registeredOwner": "John Doe"
+  }
+}
+```
+
+### Used in
+
+- [Product registration](/process-flows/registration) — Final step, sync to manufacturer

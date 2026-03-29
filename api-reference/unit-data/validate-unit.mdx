@@ -1,0 +1,52 @@
+---
+title: "Validate unit"
+description: "GET /v1/validate-unit — Lightweight check that a serial number exists and return associated model number(s)."
+---
+
+## `GET /v1/validate-unit`
+
+Validate that a serial number exists in your system and return the associated model number(s). This is the first call in any workflow — a lightweight check before requesting full details.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `SerialNumber` | string | **Yes** | The serial number to validate |
+| `ModelNumber` | string | No | Optional model number to narrow results (for multi-component systems) |
+
+### Response `200 OK`
+
+```json
+{
+  "serialNumber": "ABC123456789",
+  "modelNumbers": [
+    {
+      "modelNumber": "EN6-50-DORT",
+      "modelDescription": "50gal Tall EL 4.5kW 240V",
+      "installDate": "2023-06-15T00:00:00Z"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `serialNumber` | string | The validated serial number |
+| `modelNumbers` | array | One or more models associated with this serial. Multiple models may appear for multi-component systems. |
+| `modelNumbers[].modelNumber` | string | Model number |
+| `modelNumbers[].modelDescription` | string | Human-readable description |
+| `modelNumbers[].installDate` | datetime | Recorded installation date (if known) |
+
+### Response `404 Not Found`
+
+```json
+{
+  "error": "UNIT_NOT_FOUND",
+  "message": "No unit found for serial number ABC123456789"
+}
+```
+
+### Used in
+
+- [Product registration](/process-flows/registration) — Step 1
+- [Claims processing](/process-flows/claims-processing) — Phase 1

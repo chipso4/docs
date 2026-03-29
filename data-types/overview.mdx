@@ -1,0 +1,59 @@
+---
+title: "Data types overview"
+description: "Design principles and conventions for all data types in the API."
+---
+
+## Design principles
+
+All data types in this API follow these conventions:
+
+1. **ERP-agnostic** — Classification fields use `string` rather than fixed enums. Your middleware maps your ERP's values to whatever string makes sense.
+
+2. **Nullable by default** — All fields are nullable unless marked as **required**. This accommodates ERP systems that may not populate every field.
+
+3. **Extensible via `extendedAttributes`** — Every entity supports a `DataAttribute[]` array for manufacturer-specific custom fields. This is how you pass product specs, industry-specific data, rate structures, and ERP-specific codes.
+
+4. **Consistent patterns** — Address, contact, and location structures are reused across all endpoints with the same shape.
+
+5. **Multi-identifier parts** — Parts use the manufacturer part number (MPN) as the primary key, with `crossReferences` for supersession chains and brand cross-references.
+
+6. **Unified media** — Documents, images, manuals, and diagrams share a single `MediaItem` schema accessible through the `/v1/media` endpoint.
+
+## Type reference
+
+<CardGroup cols={2}>
+
+<Card title="Core objects" icon="cube" href="/data-types/core-objects">
+  Address, DataAttribute, pagination, error response
+</Card>
+
+<Card title="Contacts" icon="user" href="/data-types/contacts">
+  HomeownerInfo, ContractorInfo, DistributorInfo, ClaimContactInfo
+</Card>
+
+<Card title="Product & unit" icon="box" href="/data-types/product-unit">
+  UnitDetails, ProductInfo, ManufacturingInfo, SalesInfo, InstallationInfo, RegistrationInfo
+</Card>
+
+<Card title="Warranty" icon="shield-check" href="/data-types/warranty">
+  WarrantySummary, WarrantyCoverage, ProRatedSchedule, LaborRateSchedule
+</Card>
+
+<Card title="Parts" icon="gear" href="/data-types/parts">
+  BOMPart, ReplacementPart, PartCrossReference, WarrantyCode
+</Card>
+
+<Card title="Media" icon="photo-film" href="/data-types/media-types">
+  MediaItem with document and image category enums
+</Card>
+
+</CardGroup>
+
+## Date formats
+
+- **Date only:** `YYYY-MM-DD` (e.g., `"2024-01-15"`)
+- **Date and time:** ISO 8601 with timezone (e.g., `"2024-01-15T14:30:00Z"`)
+
+## Field naming
+
+All field names use **camelCase** (e.g., `serialNumber`, `baseModel`, `installationType`).

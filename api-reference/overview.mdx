@@ -1,0 +1,85 @@
+---
+title: "API overview"
+description: "Summary of all endpoints the manufacturer must implement, organized by domain."
+---
+
+## Base URL
+
+```
+https://{your-host}/v1
+```
+
+Replace `{your-host}` with your middleware API's hostname.
+
+## Authentication
+
+All endpoints require an OAuth2 bearer token. See [Authentication](/getting-started/authentication) for details.
+
+```
+Authorization: Bearer {access_token}
+```
+
+## Endpoint summary
+
+Your middleware must implement the following 23 endpoints. Click any endpoint for the full specification.
+
+### Unit & product data
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | [`/v1/validate-unit`](/api-reference/unit-data/validate-unit) | Validate serial number, return model(s) |
+| GET | [`/v1/units/{serial_number}`](/api-reference/unit-data/get-unit) | Full unit record |
+| GET | [`/v1/entitlement-information`](/api-reference/unit-data/entitlement-information) | Warranty entitlement with coverage tiers |
+| GET | [`/v1/units/{serial_number}/warranty-coverages`](/api-reference/unit-data/warranty-coverages) | Coverage tiers only |
+| GET | [`/v1/units/{serial_number}/parts`](/api-reference/unit-data/unit-parts) | BOM with specs and images |
+| GET | [`/v1/units/{serial_number}/distributor`](/api-reference/unit-data/unit-distributor) | Distributor that sold the unit |
+
+### Parts & BOM
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | [`/v1/bill-of-materials`](/api-reference/parts/bill-of-materials) | BOM for claims context |
+| GET | [`/v1/parts/cross-reference`](/api-reference/parts/cross-reference) | Part supersession and brand cross-references |
+| GET | [`/v1/products/warranty-codes`](/api-reference/parts/warranty-codes) | Hierarchical warranty disposition codes |
+| GET | [`/v1/products/replacements`](/api-reference/parts/replacements) | Replacement part options |
+
+### Media
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | [`/v1/media`](/api-reference/media/get-media) | Documents, images, manuals by model or part |
+| GET | [`/v1/media/{id}`](/api-reference/media/get-media-by-id) | Specific media item by ID |
+| POST | [`/v1/media`](/api-reference/media/upload-media) | Manual media upload |
+
+### Reference data
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | [`/v1/contractors`](/api-reference/reference-data/contractors) | Contractor directory search |
+| GET | [`/v1/locations`](/api-reference/reference-data/locations) | Warranty service locations |
+| GET | [`/v1/corporations`](/api-reference/reference-data/corporations) | Authorized distributors |
+| GET | [`/v1/corporations/details`](/api-reference/reference-data/corporation-details) | Distributor details |
+| GET | [`/v1/corporations/customers`](/api-reference/reference-data/corporation-customers) | Customers under a distributor |
+| GET | [`/v1/labor-rates`](/api-reference/reference-data/labor-rates) | Labor and travel rate schedule |
+
+### Registration & import
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | [`/v1/registrations/sync`](/api-reference/registration/registration-sync) | Push registration to your system |
+| GET | [`/v1/import/registrations`](/api-reference/registration/import-registrations) | Bulk historical registration export |
+
+### System
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | [`/v1/oauth2/token`](/getting-started/authentication) | OAuth2 token exchange |
+| GET | `/v1/health` | Health check |
+
+## Response conventions
+
+- All responses are `application/json`
+- Dates use ISO 8601 format (`2024-01-15` or `2024-01-15T14:30:00Z`)
+- All errors follow the [standard error format](/getting-started/error-handling)
+- List endpoints support [pagination](/data-types/core-objects#paginatedresponse)
+- Every entity supports [`extendedAttributes`](/overview/key-concepts#the-extendedattributes-pattern) for custom fields

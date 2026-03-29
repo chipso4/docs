@@ -1,0 +1,59 @@
+---
+title: "Historical import"
+description: "One-time and incremental import of existing warranty registration data from your legacy systems."
+---
+
+## Overview
+
+When Continuum first goes live for a manufacturer, the platform needs to start with a complete picture of existing warranty registrations. The historical import process pulls this data from your legacy systems so consumers don't see a blank slate when they look up their serial number.
+
+## How it works
+
+<Steps>
+  <Step title="Initial bulk load">
+    Continuum calls [`GET /v1/import/registrations`](/api-reference/registration/import-registrations) repeatedly with increasing page numbers to pull the full history. This may be tens of thousands of records.
+  </Step>
+  <Step title="Continuum stores the data">
+    Each batch of registrations is stored in Continuum's database. The platform now has historical registration data, warranty statuses, and homeowner information.
+  </Step>
+  <Step title="Incremental sync">
+    After the initial load, Continuum switches to incremental mode — calling the same endpoint with the `since` parameter set to the last sync timestamp. This picks up any new or updated registrations since the last run.
+  </Step>
+</Steps>
+
+## Pagination
+
+The endpoint supports pagination to handle large datasets efficiently:
+
+```
+GET /v1/import/registrations?page=1&page_size=100
+GET /v1/import/registrations?page=2&page_size=100
+GET /v1/import/registrations?page=3&page_size=100
+...
+```
+
+Continuum will continue requesting pages until it receives a page with fewer results than `page_size` or reaches the `total_pages` value.
+
+For incremental sync:
+```
+GET /v1/import/registrations?since=2026-03-01T00:00:00Z&page=1&page_size=100
+```
+
+## What each record should include
+
+Each registration record should include the serial number, model, brand, registration date, installation details, homeowner info, distributor, and warranty coverage tiers. Including coverage tiers in the import means Continuum can display accurate warranty status from day one — without needing to call the entitlement endpoint for every historical unit.
+
+See the [full endpoint spec](/api-reference/registration/import-registrations) for the complete response schema.
+
+## Implementation notes
+
+- **Page size:** Default 100, max 1000 per page. Choose a page size that balances throughput with response time from your backend.
+- **Timeouts:** Large pages may take longer to assemble. Continuum allows up to 60 seconds for import endpoint responses (longer than the standard 30-second timeout).
+- **Idempotency:** Continuum handles duplicate records gracefully. If the same serial number appears in multiple imports, the most recent data wins.
+- **Schedule:** The initial bulk load typically runs as a background job over hours or days depending on volume. Incremental sync runs on a configurable schedule (daily or weekly).
+
+## Endpoints involved
+
+| Endpoint | Purpose |
+|----------|---------|
+| [`GET /v1/import/registrations`](/api-reference/registration/import-registrations) | Paginated export of historical registrations |

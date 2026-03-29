@@ -1,0 +1,35 @@
+---
+title: "Upload media"
+description: "POST /v1/media — Manually upload documents, images, or other media for a product or part."
+---
+
+## `POST /v1/media`
+
+Upload media for a product model or part. Used when you want to manually add content through the platform that isn't available via your internal systems.
+
+**Content-Type:** `multipart/form-data`
+
+### Request fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | binary | **Yes** | The file to upload |
+| `title` | string | **Yes** | Media title |
+| `mediaType` | string | **Yes** | `"document"`, `"image"`, `"video"`, `"diagram"` |
+| `category` | string | **Yes** | Category value (see [`MediaItem`](/data-types/media-types) for options) |
+| `model_number` | string | No | Associated model number |
+| `part_number` | string | No | Associated part number |
+
+### Response `201 Created`
+
+```json
+{
+  "id": "media-new-001",
+  "url": "https://docs.example.com/uploaded/media-new-001.pdf",
+  "uploadedAt": "2024-07-20T10:00:00Z"
+}
+```
+
+### Used in
+
+- [Media center](/process-flows/media-center) — Manual uploads for content not in your internal systems

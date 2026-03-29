@@ -1,0 +1,119 @@
+/* Continuum Integration Docs — Custom Styles */
+
+/* ===== Card enhancements ===== */
+
+/* Light mode: visible indigo border + light indigo fill */
+a[class*="block"][class*="rounded"],
+a[class*="card"],
+div[class*="card"] > a,
+.card,
+[class*="CardGroup"] a,
+[class*="cardgroup"] a {
+  border: 2px solid rgba(79, 70, 229, 0.25) !important;
+  background-color: rgba(238, 242, 255, 0.5) !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Light mode hover */
+a[class*="block"][class*="rounded"]:hover,
+a[class*="card"]:hover,
+div[class*="card"] > a:hover,
+.card:hover,
+[class*="CardGroup"] a:hover,
+[class*="cardgroup"] a:hover {
+  border-color: rgba(79, 70, 229, 0.5) !important;
+  background-color: rgba(238, 242, 255, 0.8) !important;
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.1), 0 2px 6px rgba(79, 70, 229, 0.08) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Dark mode: rich indigo-tinted surface with bright border */
+.dark a[class*="block"][class*="rounded"],
+.dark a[class*="card"],
+.dark div[class*="card"] > a,
+.dark .card,
+.dark [class*="CardGroup"] a,
+.dark [class*="cardgroup"] a {
+  border: 2px solid rgba(129, 140, 248, 0.4) !important;
+  background-color: rgba(67, 56, 202, 0.12) !important;
+}
+
+.dark a[class*="block"][class*="rounded"]:hover,
+.dark a[class*="card"]:hover,
+.dark div[class*="card"] > a:hover,
+.dark .card:hover,
+.dark [class*="CardGroup"] a:hover,
+.dark [class*="cardgroup"] a:hover {
+  border-color: rgba(129, 140, 248, 0.65) !important;
+  background-color: rgba(67, 56, 202, 0.22) !important;
+  box-shadow: 0 6px 24px rgba(129, 140, 248, 0.18), 0 2px 8px rgba(129, 140, 248, 0.12) !important;
+}
+
+/* Fallback: also target via prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+  a[class*="block"][class*="rounded"],
+  a[class*="card"],
+  div[class*="card"] > a,
+  .card,
+  [class*="CardGroup"] a,
+  [class*="cardgroup"] a {
+    border: 2px solid rgba(129, 140, 248, 0.4) !important;
+    background-color: rgba(67, 56, 202, 0.12) !important;
+  }
+
+  a[class*="block"][class*="rounded"]:hover,
+  a[class*="card"]:hover,
+  div[class*="card"] > a:hover,
+  .card:hover,
+  [class*="CardGroup"] a:hover,
+  [class*="cardgroup"] a:hover {
+    border-color: rgba(129, 140, 248, 0.65) !important;
+    background-color: rgba(67, 56, 202, 0.22) !important;
+    box-shadow: 0 6px 24px rgba(129, 140, 248, 0.18), 0 2px 8px rgba(129, 140, 248, 0.12) !important;
+  }
+}
+
+/* ===== Accordion polish ===== */
+[data-state] > button {
+  transition: background-color 0.15s ease !important;
+}
+
+/* ===== Callout left border ===== */
+.callout,
+[class*="callout"],
+[class*="Callout"] {
+  border-left-width: 3px !important;
+}
+
+/* ===== Code blocks ===== */
+pre {
+  border-radius: 10px !important;
+}
+
+/* ===== Tabs active state uses brand color ===== */
+[role="tab"][data-state="active"] {
+  color: #4F46E5 !important;
+  border-color: #4F46E5 !important;
+}
+
+.dark [role="tab"][data-state="active"] {
+  color: #A5B4FC !important;
+  border-color: #A5B4FC !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  [role="tab"][data-state="active"] {
+    color: #A5B4FC !important;
+    border-color: #A5B4FC !important;
+  }
+}
+
+/* ===== Smooth page transitions ===== */
+#content-area {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

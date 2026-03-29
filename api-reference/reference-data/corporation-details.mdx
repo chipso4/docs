@@ -1,0 +1,28 @@
+---
+title: "Corporation details"
+description: "GET /v1/corporations/details — Details for a specific authorized distributor."
+---
+
+## `GET /v1/corporations/details`
+
+Retrieve details for a specific distributor (corporation) in your network.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `CorporationId` | string | **Yes** | The corporation's unique identifier |
+
+### Response `200 OK`
+
+```json
+{
+  "corporationId": "CORP-001",
+  "corporationName": "Premier Plumbing Supply",
+  "extendedAttributes": [
+    { "name": "Region", "value": "Southeast", "section": "Classification" },
+    { "name": "TierLevel", "value": "Platinum", "section": "Partnership" },
+    { "name": "AccountManager", "value": "Sarah Johnson", "section": "Contacts" }
+  ]
+}
+```

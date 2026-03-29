@@ -1,0 +1,88 @@
+---
+title: "Media"
+description: "MediaItem — the unified type for documents, images, manuals, diagrams, and all other file assets."
+---
+
+## MediaItem
+
+A unified media type covering documents, images, manuals, diagrams, and any other file associated with a product or part. All media is accessible through the [`/v1/media`](/api-reference/media/get-media) endpoint.
+
+```json
+{
+  "id": "doc-001",
+  "title": "Installation Guide",
+  "filename": "EN6-50-DORT_Installation_Guide.pdf",
+  "mediaType": "document",
+  "category": "installation_guide",
+  "url": "https://docs.example.com/EN6-50-DORT_Installation_Guide.pdf",
+  "previewUrl": "https://docs.example.com/previews/doc-001-thumb.jpg",
+  "mimeType": "application/pdf",
+  "fileSizeBytes": 2621440,
+  "pageCount": 24,
+  "width": null,
+  "height": null,
+  "lastUpdated": "2024-06-01",
+  "language": "en",
+  "associatedModels": ["EN6-50-DORT", "EN6-40-DORT"],
+  "associatedPartNumbers": [],
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | **Yes** | Unique identifier (used for [`/v1/media/{id}`](/api-reference/media/get-media-by-id)) |
+| `title` | string | No | Human-readable title |
+| `filename` | string | No | Original filename |
+| `mediaType` | string | **Yes** | Top-level type: `"document"`, `"image"`, `"video"`, `"diagram"` |
+| `category` | string | No | Specific category (see enums below) |
+| `url` | string | **Yes** | URL to access/download the media |
+| `previewUrl` | string | No | Thumbnail or preview image URL |
+| `mimeType` | string | No | MIME type (e.g., `"application/pdf"`, `"image/jpeg"`) |
+| `fileSizeBytes` | integer | No | File size in bytes |
+| `pageCount` | integer | No | Page count (for documents) |
+| `width` | integer | No | Width in pixels (for images) |
+| `height` | integer | No | Height in pixels (for images) |
+| `lastUpdated` | date | No | When the media was last updated |
+| `language` | string | No | Language (ISO 639-1: `"en"`, `"es"`, `"fr"`) |
+| `associatedModels` | string[] | No | Model numbers this media applies to |
+| `associatedPartNumbers` | string[] | No | Part numbers this media applies to |
+| `extendedAttributes` | [DataAttribute[]](/data-types/core-objects#dataattribute) | No | Additional metadata |
+
+---
+
+## Document categories
+
+Use these values for `category` when `mediaType` is `"document"`:
+
+| Value | Label |
+|-------|-------|
+| `installation_guide` | Installation Guide |
+| `service_manual` | Service Manual |
+| `parts_list` | Parts List |
+| `warranty_information` | Warranty Information |
+| `spec_sheet` | Spec Sheet |
+| `wiring_diagram` | Wiring Diagram |
+| `troubleshooting_guide` | Troubleshooting Guide |
+| `safety_instructions` | Safety Instructions |
+| `owners_manual` | Owner's Manual |
+| `energy_guide` | Energy Guide |
+| `dimensional_drawing` | Dimensional Drawing |
+| `product_data` | Product Data Sheet |
+| `service_bulletin` | Service / Technical Bulletin |
+| `iom` | Installation, Operation & Maintenance |
+
+---
+
+## Image categories
+
+Use these values for `category` when `mediaType` is `"image"`:
+
+| Value | Label |
+|-------|-------|
+| `product_photo` | Product Photo |
+| `part_photo` | Part Photo |
+| `installation_photo` | Installation Photo |
+| `diagram` | Technical Diagram |
+| `exploded_view` | Exploded View |
+| `rating_plate` | Rating Plate Image |

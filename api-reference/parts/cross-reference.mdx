@@ -1,0 +1,72 @@
+---
+title: "Part cross-reference"
+description: "GET /v1/parts/cross-reference — Look up supersession chains and brand cross-references for a part."
+---
+
+## `GET /v1/parts/cross-reference`
+
+Look up a part's cross-references by part number. Since this is a manufacturer's API, cross-references primarily show **supersession chains** (what this part replaces or is replaced by) and **brand-specific equivalents** (the same part under the manufacturer's different brand names).
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `partNumber` | string | **Yes** | The part number to look up cross-references for |
+
+### Response `200 OK`
+
+```json
+{
+  "partNumber": "SP20042",
+  "description": "K,ANODE,29\",3/4\"NPT,.75\"DIA,ALUMINUM",
+  "brand": "Rheem",
+  "crossReferences": [
+    {
+      "referenceType": "supersedes",
+      "partNumber": "SP20041",
+      "description": "Previous version — replaced due to improved corrosion resistance"
+    },
+    {
+      "referenceType": "superseded_by",
+      "partNumber": "SP20042-V2",
+      "description": "Newer version available with extended lifespan coating"
+    },
+    {
+      "referenceType": "brand_xref",
+      "partNumber": "SP20042-RU",
+      "brand": "Ruud",
+      "description": "Same part under the Ruud brand"
+    },
+    {
+      "referenceType": "brand_xref",
+      "partNumber": "SP20042-RC",
+      "brand": "Richmond",
+      "description": "Same part under the Richmond brand"
+    },
+    {
+      "referenceType": "oem_xref",
+      "partNumber": "A-29-075-AL",
+      "brand": "Cam Manufacturing",
+      "description": "Component manufacturer's part number"
+    },
+    {
+      "referenceType": "upc",
+      "partNumber": "020352330426"
+    }
+  ],
+  "extendedAttributes": []
+}
+```
+
+### Cross-reference types
+
+| Type | Description | Example |
+|------|-------------|---------|
+| `supersedes` | This part replaces an older part | SP20042 supersedes SP20041 |
+| `superseded_by` | This part has been replaced by a newer part | SP20042 superseded by SP20042-V2 |
+| `brand_xref` | Same part sold under a different brand name | Rheem SP20042 = Ruud SP20042-RU |
+| `oem_xref` | The component supplier's own part number | Rheem SP20042 = Cam Mfg A-29-075-AL |
+| `upc` | Universal Product Code / barcode | 020352330426 |
+| `equivalent` | Functionally equivalent part (different design, same fit/form/function) | — |
+
+See [`PartCrossReference`](/data-types/parts) for the full type definition.

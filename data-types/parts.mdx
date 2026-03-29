@@ -1,0 +1,171 @@
+---
+title: "Parts"
+description: "BOMPart, ReplacementPart, PartCrossReference, and WarrantyCode."
+---
+
+## PartCrossReference
+
+A cross-reference linking a part number to an alternate identifier. Primarily used for supersession chains and brand equivalents.
+
+```json
+{
+  "referenceType": "supersedes",
+  "partNumber": "SP20041",
+  "brand": null,
+  "description": "Previous version — replaced due to improved corrosion resistance"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `referenceType` | string | **Yes** | Type of cross-reference (see table below) |
+| `partNumber` | string | **Yes** | The cross-referenced part number |
+| `brand` | string | No | Brand this cross-reference belongs to (for `brand_xref`) |
+| `description` | string | No | Notes about the relationship |
+
+### Cross-reference types
+
+| Type | Description |
+|------|-------------|
+| `supersedes` | This part replaces an older part |
+| `superseded_by` | This part has been replaced by a newer part |
+| `brand_xref` | Same part under a different brand name |
+| `oem_xref` | Component supplier's own part number |
+| `upc` | Universal Product Code / barcode |
+| `equivalent` | Functionally equivalent (different design, same fit/form/function) |
+
+---
+
+## BOMPart
+
+A single part in a unit's bill of materials. Returned by [`GET /v1/units/{serial_number}/parts`](/api-reference/unit-data/unit-parts).
+
+```json
+{
+  "partNumber": "SP20042",
+  "description": "K,ANODE,29\",3/4\"NPT,.75\"DIA,ALUMINUM",
+  "crossReferences": [
+    { "referenceType": "supersedes", "partNumber": "SP20041" },
+    { "referenceType": "brand_xref", "partNumber": "SP20042-RU", "brand": "Ruud" }
+  ],
+  "quantity": 1,
+  "unitOfMeasure": "EA",
+  "partType": "anode",
+  "partSubType": null,
+  "brand": "Rheem",
+  "isServiceable": true,
+  "isWarrantyCovered": true,
+  "warrantyExpirationDate": "2035-06-15",
+  "inStock": true,
+  "images": [ ],
+  "notes": null,
+  "replacementsAvailable": 2,
+  "extendedAttributes": [
+    { "name": "MaterialType", "value": "Aluminum", "section": "Physical" },
+    { "name": "ThreadSize", "value": "3/4\" NPT", "section": "Physical" }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `partNumber` | string | **Yes** | Manufacturer's canonical part number (MPN) |
+| `description` | string | No | Part description |
+| `crossReferences` | PartCrossReference[] | No | Supersession and brand cross-references |
+| `quantity` | number | No | Quantity in the BOM |
+| `unitOfMeasure` | string | No | Unit of measure |
+| `partType` | string | No | Top-level classification (e.g., `"compressor"`, `"motor"`, `"anode"`, `"element"`, `"thermostat"`, `"valve"`) |
+| `partSubType` | string | No | Specific sub-classification (e.g., `"scroll_compressor"`, `"blower_motor"`) |
+| `brand` | string | No | Part brand |
+| `isServiceable` | boolean | No | Can be individually serviced/replaced |
+| `isWarrantyCovered` | boolean | No | Currently covered under warranty for this unit |
+| `warrantyExpirationDate` | date | No | When warranty coverage for this part expires |
+| `inStock` | boolean | No | Currently available |
+| `images` | [MediaItem[]](/data-types/media-types) | No | Part images (inline). For full media, use `/v1/media` |
+| `notes` | string | No | Additional notes in the BOM context |
+| `replacementsAvailable` | integer | No | Count of replacement options |
+| `extendedAttributes` | [DataAttribute[]](/data-types/core-objects#dataattribute) | No | **Part specifications.** Use for physical, electrical, and service data. |
+
+<Tip>
+Part specifications vary by part type. Use `extendedAttributes` with descriptive names and consistent `section` values. See [Key concepts](/overview/key-concepts#the-extendedattributes-pattern) for examples by part type.
+</Tip>
+
+---
+
+## ReplacementPart
+
+A replacement option for a failed part. Returned by [`GET /v1/products/replacements`](/api-reference/parts/replacements).
+
+```json
+{
+  "partNumber": "SP20042-V2",
+  "description": "K,ANODE,29\",3/4\"NPT,.75\"DIA,ALUMINUM (IMPROVED)",
+  "crossReferences": [
+    { "referenceType": "supersedes", "partNumber": "SP20042" }
+  ],
+  "brand": "Rheem",
+  "isOEM": true,
+  "replacementType": "superseded",
+  "inStock": true,
+  "leadTimeDays": null,
+  "listPrice": 52.99,
+  "warrantyPrice": 0.00,
+  "score": 9,
+  "scoreDetail": "Manufacturer-recommended superseding replacement",
+  "images": [ ],
+  "extendedAttributes": [ ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `partNumber` | string | **Yes** | Replacement part number |
+| `description` | string | No | Part description |
+| `crossReferences` | PartCrossReference[] | No | Cross-references |
+| `brand` | string | No | Brand name |
+| `isOEM` | boolean | **Yes** | Whether this is an OEM part |
+| `replacementType` | string | No | `"exact"`, `"superseded"`, `"compatible"`, `"aftermarket"`, `"universal"` |
+| `inStock` | boolean | No | Current availability |
+| `leadTimeDays` | integer | No | Lead time if not in stock |
+| `listPrice` | number | No | List/retail price |
+| `warrantyPrice` | number | No | Price under warranty claim |
+| `score` | integer | No | Recommendation score (higher = better match) |
+| `scoreDetail` | string | No | Explanation of the score |
+| `images` | [MediaItem[]](/data-types/media-types) | No | Part images |
+| `extendedAttributes` | [DataAttribute[]](/data-types/core-objects#dataattribute) | No | Part specifications |
+
+---
+
+## WarrantyCode
+
+Hierarchical warranty disposition code for classifying failures. Codes are organized in a tree: general → specific → detail. Returned by [`GET /v1/products/warranty-codes`](/api-reference/parts/warranty-codes).
+
+```json
+{
+  "id": "ELEC",
+  "description": "Electrical Failure",
+  "fullPath": "Electrical Failure",
+  "idPath": "ELEC",
+  "requiresSerialNumber": false,
+  "requiresAttachment": false,
+  "children": [
+    {
+      "id": "THERM",
+      "description": "Thermostat",
+      "children": [
+        { "id": "FAIL-REG", "description": "Failed to regulate temperature", "children": [] }
+      ]
+    }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | **Yes** | Unique code identifier |
+| `description` | string | No | Human-readable description |
+| `fullPath` | string | No | Full path (e.g., `"Electrical > Thermostat > Failed to regulate"`) |
+| `idPath` | string | No | Full ID path (e.g., `"ELEC/THERM/FAIL-REG"`) |
+| `requiresSerialNumber` | boolean | No | Whether the failed part's serial number is needed |
+| `requiresAttachment` | boolean | No | Whether a supporting attachment is needed |
+| `children` | WarrantyCode[] | No | Child codes. Empty or null = leaf node (selectable). |

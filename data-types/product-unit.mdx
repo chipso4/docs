@@ -1,0 +1,139 @@
+---
+title: "Product & unit"
+description: "UnitDetails, ProductInfo, ManufacturingInfo, SalesInfo, InstallationInfo, and RegistrationInfo."
+---
+
+## UnitDetails
+
+The top-level record for a manufactured unit, identified by serial number. Returned by [`GET /v1/units/{serial_number}`](/api-reference/unit-data/get-unit).
+
+```json
+{
+  "serialNumber": "ABC123456789",
+  "product": { },
+  "manufacturing": { },
+  "sales": { },
+  "warranty": { },
+  "installation": { },
+  "registration": { },
+  "extendedAttributes": [ ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `serialNumber` | string | **Yes** | The unit's serial number |
+| `product` | ProductInfo | No | Product identification and classification |
+| `manufacturing` | ManufacturingInfo | No | Manufacturing origin data |
+| `sales` | SalesInfo | No | Sales transaction data |
+| `warranty` | [WarrantySummary](/data-types/warranty#warrantysummary) | No | High-level warranty status |
+| `installation` | InstallationInfo | No | Installation details |
+| `registration` | RegistrationInfo | No | Registration status |
+| `extendedAttributes` | [DataAttribute[]](/data-types/core-objects#dataattribute) | No | Additional unit-level data |
+
+---
+
+## ProductInfo
+
+Product identification and classification. Technical specifications are carried in `extendedAttributes` to support any industry and product type.
+
+```json
+{
+  "baseModel": "EN6-50-DORT",
+  "modelDescription": "50gal Tall EL 4.5kW 240V",
+  "sku": "100234567",
+  "materialNumber": "200234567",
+  "materialDescription": "EN6-50-DORT 200",
+  "brand": "Rheem",
+  "productLine": "Performance Platinum",
+  "seriesName": "EN6",
+  "productCategory": "Water Heater",
+  "productType": "Tank",
+  "fuelType": "Electric",
+  "extendedAttributes": [
+    { "name": "CapacityGallons", "value": "50", "section": "Capacity" },
+    { "name": "Voltage", "value": "240V", "section": "Electrical" },
+    { "name": "UEF", "value": "0.93", "section": "Efficiency" }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `baseModel` | string | No | Base model number |
+| `modelDescription` | string | No | Full model description |
+| `sku` | string | No | SKU / item number |
+| `materialNumber` | string | No | ERP material/item number |
+| `materialDescription` | string | No | ERP material description |
+| `brand` | string | No | Product brand. A manufacturer may own multiple brands with different warranty terms. |
+| `productLine` | string | No | Product line grouping |
+| `seriesName` | string | No | Series identifier |
+| `productCategory` | string | No | Product category (e.g., "Water Heater", "Air Conditioner") |
+| `productType` | string | No | Specific type (e.g., "Tank", "Tankless", "Heat Pump") |
+| `fuelType` | string | No | Energy source (e.g., "Gas", "Electric", "Solar") |
+| `extendedAttributes` | [DataAttribute[]](/data-types/core-objects#dataattribute) | No | **Product technical specifications.** Use this for all industry-specific data. |
+
+<Tip>
+Use `extendedAttributes` with consistent `section` values for technical specs. Continuum renders these as grouped attribute tables. See [Key concepts](/overview/key-concepts#the-extendedattributes-pattern) for examples.
+</Tip>
+
+---
+
+## ManufacturingInfo
+
+Manufacturing origin data.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `plantCode` | string | No | Plant identifier |
+| `plantName` | string | No | Plant name |
+| `manufactureDate` | date | No | Manufacture date |
+| `lotNumber` | string | No | Production lot/batch |
+| `countryOfOrigin` | string | No | Country of manufacture |
+
+---
+
+## SalesInfo
+
+Sales transaction data — how the unit reached the distribution channel.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `salesOrg` | string | No | Sales organization code |
+| `salesOrderNumber` | string | No | Sales order number |
+| `originalPoNumber` | string | No | Customer's PO number |
+| `shippingPlant` | string | No | Shipping plant |
+| `customerId` | string | No | Distributor/customer account ID |
+| `customerName` | string | No | Distributor/customer name |
+| `shipDate` | date | No | Ship date |
+| `invoiceNumber` | string | No | Invoice number |
+| `invoiceDate` | date | No | Invoice date |
+
+---
+
+## InstallationInfo
+
+Installation details, typically populated from product registration.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `installDate` | date | No | Installation date. **This is the warranty effective date if documented.** Falls back to `manufactureDate + 90 days` if not recorded. |
+| `installationType` | string | No | `"Residential"`, `"Commercial"`, `"MultiFamily"` — affects warranty terms |
+| `installedBy` | [ContractorInfo](/data-types/contacts#contractorinfo) | No | Installing contractor |
+| `installationAddress` | [Address](/data-types/core-objects#address) | No | Where the unit is installed |
+| `isProperlyDocumented` | boolean | No | Whether the install date is properly documented |
+
+---
+
+## RegistrationInfo
+
+Registration status and metadata.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `isRegistered` | boolean | **Yes** | Whether the unit has been registered |
+| `registrationDate` | datetime | No | When it was registered |
+| `registrationSource` | string | No | How it was registered (e.g., `"web_portal"`, `"mail_in"`, `"dealer"`, `"continuum"`) |
+| `registeredOwner` | [HomeownerInfo](/data-types/contacts#homeownerinfo) | No | Registered owner |
+| `affectsWarrantyTerms` | boolean | No | Whether registration extends or unlocks additional coverage |
+| `extendedCoverageDays` | integer | No | Additional coverage days granted by registration |

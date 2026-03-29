@@ -1,0 +1,127 @@
+---
+title: "Warranty"
+description: "WarrantySummary, WarrantyCoverage, ProRatedSchedule, and LaborRateSchedule."
+---
+
+## WarrantySummary
+
+High-level warranty status for quick display. For detailed per-tier coverage, see `WarrantyCoverage` below.
+
+```json
+{
+  "overallStatus": "active",
+  "effectiveDate": "2023-06-15",
+  "isTransferable": false,
+  "currentOwnerIsOriginal": true
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `overallStatus` | string | **Yes** | Aggregate warranty status (see values below) |
+| `effectiveDate` | date | No | Warranty effective date (install date if documented, otherwise manufacture date + 90 days) |
+| `isTransferable` | boolean | No | Whether the warranty can transfer to a new owner |
+| `currentOwnerIsOriginal` | boolean | No | Whether the current owner is the original purchaser |
+
+### `overallStatus` values
+
+| Value | Description |
+|-------|-------------|
+| `produced` | Manufactured but not yet installed/registered |
+| `active` | At least one coverage tier is active |
+| `partial` | Some tiers active, some expired (e.g., labor expired but parts still covered) |
+| `expired` | All coverage tiers have expired |
+| `voided` | Warranty voided (improper installation, unauthorized modifications, etc.) |
+| `pending` | Registration received, activation in progress |
+
+---
+
+## WarrantyCoverage
+
+A single tier of warranty coverage. A unit typically has multiple coverages returned as an array.
+
+```json
+{
+  "coverageType": "tank",
+  "coverageLabel": "Tank & Heat Exchanger",
+  "status": "active",
+  "effectiveDate": "2023-06-15",
+  "expirationDate": "2035-06-15",
+  "coverageTermMonths": 144,
+  "isProRated": true,
+  "proRatedSchedule": { },
+  "coveredComponents": ["tank", "heat_exchanger"],
+  "exclusions": ["sediment_buildup", "improper_installation"],
+  "requiresRegistration": false,
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `coverageType` | string | **Yes** | Tier identifier: `"tank"`, `"heat_exchanger"`, `"parts"`, `"labor"`, `"component_specific"` |
+| `coverageLabel` | string | No | Human-readable label |
+| `status` | string | **Yes** | `"active"`, `"expired"`, `"voided"`, `"pending"`, `"pro_rated"` |
+| `effectiveDate` | date | No | Coverage start date |
+| `expirationDate` | date | No | Coverage end date |
+| `coverageTermMonths` | integer | No | Original term in months |
+| `isProRated` | boolean | No | Whether reimbursement decreases over time |
+| `proRatedSchedule` | ProRatedSchedule | No | The declining reimbursement schedule |
+| `coveredComponents` | string[] | No | Specific components covered |
+| `exclusions` | string[] | No | Known exclusions |
+| `requiresRegistration` | boolean | No | Whether registration is needed for this tier to be active |
+| `extendedAttributes` | [DataAttribute[]](/data-types/core-objects#dataattribute) | No | Additional coverage data |
+
+---
+
+## ProRatedSchedule
+
+Defines how reimbursement decreases over time for pro-rated coverage tiers.
+
+```json
+{
+  "fullCoverageMonths": 72,
+  "tiers": [
+    { "fromMonth": 1, "toMonth": 72, "reimbursementPercent": 100.0, "description": "Full replacement" },
+    { "fromMonth": 73, "toMonth": 108, "reimbursementPercent": 50.0, "description": "50% credit" },
+    { "fromMonth": 109, "toMonth": 144, "reimbursementPercent": 25.0, "description": "25% credit" }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `fullCoverageEndDate` | date | No | Last date of full coverage |
+| `fullCoverageMonths` | integer | No | Months of full coverage from effective date |
+| `tiers` | array | No | Declining reimbursement schedule |
+| `tiers[].fromMonth` | integer | **Yes** | Start month of this tier |
+| `tiers[].toMonth` | integer | **Yes** | End month of this tier |
+| `tiers[].reimbursementPercent` | number | **Yes** | Percentage reimbursed during this period |
+| `tiers[].description` | string | No | Human-readable label |
+
+---
+
+## LaborRateSchedule
+
+Applicable labor and travel reimbursement rates. Rate structures vary between manufacturers, so all rate data uses `extendedAttributes`.
+
+```json
+{
+  "effectiveDate": "2025-01-01",
+  "expirationDate": "2025-12-31",
+  "extendedAttributes": [
+    { "name": "LaborRate", "value": "85.00", "section": "Labor" },
+    { "name": "LaborRateUOM", "value": "per_hour", "section": "Labor" },
+    { "name": "MaxLaborHours", "value": "2.0", "section": "Labor" },
+    { "name": "TravelRatePerMile", "value": "0.67", "section": "Travel" },
+    { "name": "MaxTravelMiles", "value": "50", "section": "Travel" },
+    { "name": "RefrigerantAllowance", "value": "75.00", "section": "Allowances" }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `effectiveDate` | date | No | When this schedule takes effect |
+| `expirationDate` | date | No | When this schedule expires |
+| `extendedAttributes` | [DataAttribute[]](/data-types/core-objects#dataattribute) | No | All rate data as name-value pairs |

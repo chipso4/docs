@@ -1,0 +1,107 @@
+---
+title: "Get media"
+description: "GET /v1/media — Retrieve documents, images, and manuals by model number or part number."
+---
+
+## `GET /v1/media`
+
+Retrieve media (documents, images, manuals, diagrams) associated with a model or part. This is a unified endpoint — all media types are served from here. Query by model number for product documentation, or by part number for part-specific media.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `model_number` | string | **Yes*** | Product model number. At least one of `model_number` or `part_number` is required. |
+| `part_number` | string | **Yes*** | Part number. At least one of `model_number` or `part_number` is required. |
+| `mediaType` | string | No | Filter by type: `"document"`, `"image"`, `"video"`, `"diagram"` |
+| `category` | string | No | Filter by category (e.g., `"installation_guide"`, `"part_photo"`) |
+
+### Response `200 OK` — by model
+
+`GET /v1/media?model_number=EN6-50-DORT`
+
+```json
+{
+  "media": [
+    {
+      "id": "doc-001",
+      "title": "Installation Guide",
+      "filename": "EN6-50-DORT_Installation_Guide.pdf",
+      "mediaType": "document",
+      "category": "installation_guide",
+      "url": "https://docs.example.com/EN6-50-DORT_Installation_Guide.pdf",
+      "previewUrl": "https://docs.example.com/previews/doc-001-thumb.jpg",
+      "mimeType": "application/pdf",
+      "fileSizeBytes": 2621440,
+      "pageCount": 24,
+      "lastUpdated": "2024-06-01",
+      "language": "en",
+      "associatedModels": ["EN6-50-DORT", "EN6-40-DORT"],
+      "associatedPartNumbers": [],
+      "extendedAttributes": []
+    },
+    {
+      "id": "doc-002",
+      "title": "Wiring Diagram",
+      "mediaType": "document",
+      "category": "wiring_diagram",
+      "url": "https://docs.example.com/EN6-50-DORT_Wiring_Diagram.pdf",
+      "mimeType": "application/pdf",
+      "fileSizeBytes": 524288,
+      "pageCount": 2,
+      "associatedModels": ["EN6-50-DORT"],
+      "associatedPartNumbers": [],
+      "extendedAttributes": []
+    },
+    {
+      "id": "img-en6-01",
+      "title": "EN6-50-DORT Product Photo",
+      "mediaType": "image",
+      "category": "product_photo",
+      "url": "https://images.example.com/EN6-50-DORT_main.jpg",
+      "previewUrl": "https://images.example.com/EN6-50-DORT_thumb.jpg",
+      "mimeType": "image/jpeg",
+      "width": 1200,
+      "height": 1200,
+      "associatedModels": ["EN6-50-DORT"],
+      "associatedPartNumbers": [],
+      "extendedAttributes": []
+    }
+  ],
+  "total": 3
+}
+```
+
+### Response `200 OK` — by part
+
+`GET /v1/media?part_number=SP20042`
+
+```json
+{
+  "media": [
+    {
+      "id": "img-sp20042-01",
+      "title": "Anode Rod SP20042",
+      "mediaType": "image",
+      "category": "part_photo",
+      "url": "https://parts.example.com/images/SP20042_main.jpg",
+      "mimeType": "image/jpeg",
+      "width": 800,
+      "height": 800,
+      "associatedModels": [],
+      "associatedPartNumbers": ["SP20042"],
+      "extendedAttributes": []
+    }
+  ],
+  "total": 1
+}
+```
+
+### Categories
+
+See [`MediaItem`](/data-types/media-types) for the full list of document and image categories.
+
+### Used in
+
+- [Media center](/process-flows/media-center) — Document and image retrieval
+- [Warranty verification](/process-flows/warranty-verification) — Product documentation

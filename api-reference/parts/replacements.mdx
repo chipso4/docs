@@ -1,0 +1,81 @@
+---
+title: "Replacement parts"
+description: "GET /v1/products/replacements — Available replacements for a failed part including superseded and non-OEM options."
+---
+
+## `GET /v1/products/replacements`
+
+Retrieve available replacement parts for a failed part. Returns the original part (if still available), any superseding parts, and optionally non-OEM alternatives. Results include a recommendation score when available.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `PartNumber` | string | **Yes** | The failed part number |
+| `IncludeNonOEM` | boolean | No | Include non-OEM alternatives (default: `false`) |
+
+### Response `200 OK`
+
+```json
+{
+  "replacementParts": [
+    {
+      "partNumber": "SP20042",
+      "description": "K,ANODE,29\",3/4\"NPT,.75\"DIA,ALUMINUM",
+      "crossReferences": [
+        { "referenceType": "upc", "partNumber": "020352330426" }
+      ],
+      "brand": "Rheem",
+      "isOEM": true,
+      "replacementType": "exact",
+      "inStock": true,
+      "listPrice": 45.99,
+      "warrantyPrice": 0.00,
+      "score": 10,
+      "scoreDetail": "Exact match — same part number",
+      "images": [
+        {
+          "id": "img-sp20042-01",
+          "mediaType": "image",
+          "category": "part_photo",
+          "url": "https://parts.example.com/images/SP20042_main.jpg"
+        }
+      ],
+      "extendedAttributes": []
+    },
+    {
+      "partNumber": "SP20042-V2",
+      "description": "K,ANODE,29\",3/4\"NPT,.75\"DIA,ALUMINUM (IMPROVED)",
+      "crossReferences": [
+        { "referenceType": "supersedes", "partNumber": "SP20042", "description": "Improved corrosion resistance" }
+      ],
+      "brand": "Rheem",
+      "isOEM": true,
+      "replacementType": "superseded",
+      "inStock": true,
+      "listPrice": 52.99,
+      "warrantyPrice": 0.00,
+      "score": 9,
+      "scoreDetail": "Manufacturer-recommended superseding replacement",
+      "images": [],
+      "extendedAttributes": []
+    }
+  ]
+}
+```
+
+### Replacement types
+
+| Type | Description |
+|------|-------------|
+| `exact` | Same part number — direct match |
+| `superseded` | A newer part that replaces the failed part |
+| `compatible` | Functionally compatible part from the same manufacturer |
+| `aftermarket` | Third-party replacement (only if `IncludeNonOEM=true`) |
+| `universal` | Universal-fit replacement |
+
+See [`ReplacementPart`](/data-types/parts) for the full type definition.
+
+### Used in
+
+- [Claims processing](/process-flows/claims-processing) — Phase 2, replacement selection

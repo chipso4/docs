@@ -1,0 +1,68 @@
+---
+title: "Architecture"
+description: "How the middleware API fits between Continuum and your systems of record."
+---
+
+## Integration architecture
+
+The middleware API is the integration boundary between Continuum and your internal systems. Continuum defines the contract (this documentation). Your IT team implements it, mapping your internal data to the agreed-upon JSON schemas.
+
+<Frame>
+  <img src="/images/architecture-diagram.svg" alt="Integration architecture showing Consumer, Contractor, and Distributor connecting to Continuum, which connects via HTTPS to your middleware API, which connects to your ERP, Warranty DB, Legacy systems, and Document storage." />
+</Frame>
+
+The dashed border around **Your middleware** represents the API layer you build and host. Everything to the left is Continuum's responsibility. Everything to the right is your existing infrastructure.
+
+## What Continuum calls
+
+Continuum makes outbound HTTPS calls to your middleware API. All communication is:
+
+- **REST over HTTPS** — Standard JSON request/response
+- **Authenticated via OAuth2** — Client credentials flow; Continuum obtains a bearer token before making calls
+- **Initiated by Continuum** — Your middleware is a server that responds to Continuum's requests. You don't need to call Continuum (except for optional webhook notifications).
+
+## What your middleware does
+
+Your middleware is a translation layer. It receives Continuum's standardized JSON requests and:
+
+<Steps>
+  <Step title="Authenticates">
+    Validates the OAuth2 bearer token on each request.
+  </Step>
+  <Step title="Translates">
+    Converts the request into whatever your backend systems expect — SQL queries, BAPI calls, API calls, file reads, etc.
+  </Step>
+  <Step title="Retrieves or updates">
+    Gets or writes data in your systems of record.
+  </Step>
+  <Step title="Transforms">
+    Converts the response back into the JSON schema Continuum expects.
+  </Step>
+  <Step title="Returns">
+    Sends the JSON response back to Continuum.
+  </Step>
+</Steps>
+
+<Note>
+Your middleware can be built with any technology stack — .NET, Java, Node.js, Python, Go, or anything else that can serve an HTTPS REST API. The only requirement is that it conforms to the endpoint contracts in this documentation.
+</Note>
+
+## Source systems
+
+Your middleware will likely need to connect to one or more internal systems:
+
+| System | What it provides | Example endpoints it powers |
+|--------|-----------------|---------------------------|
+| **ERP** | Unit/serial data, sales transactions, BOM, distributor info, contractor directory | Unit lookup, entitlement, parts, distributor |
+| **Warranty database** | Coverage terms, entitlement rules, warranty codes, rate tables | Entitlement info, warranty coverages, labor rates |
+| **Document / media storage** | Manuals, spec sheets, images, diagrams | Media endpoints |
+| **Legacy systems** | Historical registrations, older product data | Historical import |
+
+The specific systems vary by manufacturer. Some have everything in SAP. Others have a separate warranty system alongside their ERP. Some store documents in a shared drive or CDN. Your middleware abstracts all of this behind a single API surface.
+
+## Security
+
+- **Transport:** All API traffic must be over HTTPS (TLS 1.2+)
+- **Authentication:** OAuth2 client credentials. Continuum presents a bearer token with every request.
+- **Network:** You control network access. You can restrict inbound traffic to Continuum's IP ranges, require VPN, or use any other network-level controls your security team requires.
+- **Data:** Your middleware controls exactly what data is exposed. You can filter, redact, or transform any field before returning it.

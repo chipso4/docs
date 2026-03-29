@@ -1,0 +1,117 @@
+---
+title: "Get unit details"
+description: "GET /v1/units/{serial_number} — Full unit record with product, manufacturing, sales, warranty, and registration data."
+---
+
+## `GET /v1/units/{serial_number}`
+
+Return the full unit record including product details, sales transaction data, manufacturing info, installation data, registration status, and warranty summary. This is the primary data call that powers the Warranty Verification page and auto-fill during Product Registration.
+
+### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `serial_number` | string | **Yes** | The unit's serial number |
+
+### Response `200 OK`
+
+```json
+{
+  "serialNumber": "ABC123456789",
+  "product": {
+    "baseModel": "EN6-50-DORT",
+    "modelDescription": "50gal Tall EL 4.5kW 2x4.5/4.5-CU/INC 240V-1ph 60Hz",
+    "sku": "100234567",
+    "materialNumber": "200234567",
+    "materialDescription": "EN6-50-DORT 200",
+    "brand": "Rheem",
+    "productLine": "Performance Platinum",
+    "seriesName": "EN6",
+    "productCategory": "Water Heater",
+    "productType": "Tank",
+    "fuelType": "Electric",
+    "extendedAttributes": [
+      { "name": "CapacityGallons", "value": "50", "section": "Capacity" },
+      { "name": "Voltage", "value": "240V", "section": "Electrical" },
+      { "name": "Phase", "value": "1", "section": "Electrical" },
+      { "name": "UEF", "value": "0.93", "section": "Efficiency" },
+      { "name": "FirstHourRating", "value": "67 gal", "section": "Performance" },
+      { "name": "RecoveryRate", "value": "21 GPH", "section": "Performance" }
+    ]
+  },
+  "manufacturing": {
+    "plantCode": "1600",
+    "plantName": "Montgomery Plant",
+    "manufactureDate": "2023-03-15",
+    "lotNumber": "L2023-0315-A",
+    "countryOfOrigin": "US"
+  },
+  "sales": {
+    "salesOrg": "1030",
+    "salesOrderNumber": "1234567890",
+    "originalPoNumber": "42",
+    "shippingPlant": "1600",
+    "customerId": "5678901",
+    "customerName": "Premier Plumbing Supply",
+    "shipDate": "2023-03-20",
+    "invoiceNumber": "INV-2023-456789",
+    "invoiceDate": "2023-03-20"
+  },
+  "warranty": {
+    "overallStatus": "active",
+    "effectiveDate": "2023-06-15",
+    "isTransferable": false,
+    "currentOwnerIsOriginal": true
+  },
+  "installation": {
+    "installDate": "2023-06-15",
+    "installationType": "Residential",
+    "installedBy": {
+      "id": "CONTR-042",
+      "companyName": "Smith Plumbing LLC",
+      "firstName": "John",
+      "lastName": "Smith"
+    },
+    "installationAddress": {
+      "address1": "123 Main St",
+      "city": "Nashville",
+      "stateCode": "TN",
+      "zip": "37201",
+      "countryCode": "US"
+    },
+    "isProperlyDocumented": true
+  },
+  "registration": {
+    "isRegistered": true,
+    "registrationDate": "2023-06-20T14:30:00Z",
+    "registrationSource": "web_portal",
+    "registeredOwner": {
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "email": "jane.doe@email.com",
+      "phone": "555-987-6543"
+    },
+    "affectsWarrantyTerms": false,
+    "extendedCoverageDays": null
+  },
+  "extendedAttributes": [
+    { "name": "ERPMaterialGroup", "value": "WH-ELEC-TANK", "section": "Classification" }
+  ]
+}
+```
+
+The response uses the [`UnitDetails`](/data-types/product-unit) data type. Product technical specifications are carried in `product.extendedAttributes` — see [Key concepts](/overview/key-concepts#the-extendedattributes-pattern).
+
+### Response `404 Not Found`
+
+```json
+{
+  "error": "UNIT_NOT_FOUND",
+  "message": "No unit found for serial number ABC123456789"
+}
+```
+
+### Used in
+
+- [Product registration](/process-flows/registration) — Auto-fill product fields
+- [Warranty verification](/process-flows/warranty-verification) — Display unit details

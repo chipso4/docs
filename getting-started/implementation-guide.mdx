@@ -1,0 +1,114 @@
+---
+title: "Implementation guide"
+description: "Step-by-step guide for your IT team to build and deploy the middleware API."
+---
+
+This guide walks your development team through implementing the middleware API from scratch.
+
+## Prerequisites
+
+Before you begin:
+
+- Access to your ERP and/or warranty database (read access at minimum; write access for registration sync)
+- A development environment where you can deploy an HTTPS REST API
+- TLS certificate for HTTPS (self-signed is fine for development; production requires a valid cert)
+- An OAuth2 authorization server (or you'll build a simple token endpoint)
+
+## Step 1: Set up authentication
+
+Implement the `POST /v1/oauth2/token` endpoint. Continuum will call this before making any other API calls.
+
+At minimum, you need to:
+
+1. Issue a `client_id` and `client_secret` to Continuum
+2. Validate credentials on the token request
+3. Return a signed bearer token with an expiration time
+4. Validate that token on all subsequent requests
+
+See [Authentication](/getting-started/authentication) for the full spec.
+
+## Step 2: Implement the health check
+
+`GET /v1/health` is a simple endpoint that returns the service status. Continuum uses this for uptime monitoring.
+
+```json
+{
+  "status": "Healthy",
+  "timestamp": "2026-03-29T14:30:00Z",
+  "version": "1.0"
+}
+```
+
+## Step 3: Build the unit lookup endpoints
+
+These are the foundation — every workflow starts with a serial number lookup.
+
+<Steps>
+  <Step title="Validate Unit">
+    `GET /v1/validate-unit` — lightweight serial check. Map the serial number to your ERP's equipment/material master and return the model number(s). [Full spec →](/api-reference/unit-data/validate-unit)
+  </Step>
+  <Step title="Get Unit Details">
+    `GET /v1/units/{serial_number}` — full unit record. Pull product info, manufacturing data, sales transaction, installation details, registration status, and warranty summary from your ERP. [Full spec →](/api-reference/unit-data/get-unit)
+  </Step>
+  <Step title="Entitlement Information">
+    `GET /v1/entitlement-information` — warranty entitlement with coverage tiers. This is the most important endpoint for claims processing. [Full spec →](/api-reference/unit-data/entitlement-information)
+  </Step>
+</Steps>
+
+## Step 4: Add parts and media
+
+<Steps>
+  <Step title="BOM / Parts">
+    `GET /v1/units/{serial_number}/parts` — return the bill of materials with part specs and images. Map from your ERP's BOM structure. [Full spec →](/api-reference/unit-data/unit-parts)
+  </Step>
+  <Step title="Media">
+    `GET /v1/media` — return documents and images by model or part number. Source these from wherever your files live — document management system, shared drives, CDN, etc. [Full spec →](/api-reference/media/get-media)
+  </Step>
+</Steps>
+
+## Step 5: Reference data endpoints
+
+These power form dropdowns and lookups in the portal:
+
+- `GET /v1/units/{serial_number}/distributor` — auto-fill distributor during registration
+- `GET /v1/contractors` — contractor directory search
+- `GET /v1/locations` — warranty service locations
+- `GET /v1/corporations` — authorized distributor list
+- `GET /v1/labor-rates` — labor/travel reimbursement rates
+
+## Step 6: Registration sync
+
+`POST /v1/registrations/sync` — accept registration data from Continuum and write it back to your warranty database. This ensures your system knows the unit is registered, which may activate or extend warranty coverage. [Full spec →](/api-reference/registration/registration-sync)
+
+## Step 7: Historical import (if applicable)
+
+If you have existing registration data in a legacy system, implement `GET /v1/import/registrations` so Continuum can pull historical records. This is typically a one-time bulk load followed by incremental syncs. [Full spec →](/api-reference/registration/import-registrations)
+
+## Deployment checklist
+
+<AccordionGroup>
+  <Accordion title="Security">
+    - HTTPS with TLS 1.2+ enabled
+    - OAuth2 token endpoint working and tested
+    - Network access restricted to Continuum's IP ranges (if applicable)
+    - Sensitive fields filtered/redacted as needed
+  </Accordion>
+  <Accordion title="Reliability">
+    - Health check endpoint responding
+    - Appropriate timeouts configured (Continuum will timeout after 30 seconds)
+    - Error responses follow the standard format
+    - Rate limiting configured if needed (communicate limits to Continuum)
+  </Accordion>
+  <Accordion title="Data quality">
+    - Serial number lookups returning complete product data
+    - Coverage tiers populated with accurate dates
+    - Parts BOM returning serviceable parts with descriptions
+    - Media URLs are accessible and returning content
+  </Accordion>
+  <Accordion title="Testing">
+    - All endpoints tested with representative serial numbers
+    - Error cases verified (invalid serial, expired warranty, missing data)
+    - Pagination tested on list endpoints
+    - Token expiration and refresh tested
+  </Accordion>
+</AccordionGroup>

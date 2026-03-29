@@ -1,0 +1,33 @@
+---
+title: "Corporation customers"
+description: "GET /v1/corporations/customers — Customer accounts under a specific distributor."
+---
+
+## `GET /v1/corporations/customers`
+
+Retrieve customer accounts under a specific distributor (corporation). These are the contractor/dealer accounts that purchase through the distributor.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `CorporationId` | string | **Yes** | The corporation's unique identifier |
+
+### Response `200 OK`
+
+```json
+{
+  "customers": [
+    {
+      "companyId": "C-827451",
+      "companyName": "Smith Plumbing LLC",
+      "extendedAttributes": []
+    },
+    {
+      "companyId": "C-827452",
+      "companyName": "Jones HVAC Services",
+      "extendedAttributes": []
+    }
+  ]
+}
+```

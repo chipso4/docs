@@ -1,0 +1,60 @@
+---
+title: "Warranty coverages"
+description: "GET /v1/units/{serial_number}/warranty-coverages — Coverage tiers for a unit."
+---
+
+## `GET /v1/units/{serial_number}/warranty-coverages`
+
+Retrieve just the warranty coverage tiers for a unit. A lightweight alternative to the full entitlement endpoint when only coverage data is needed (e.g., for the warranty verification display).
+
+### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `serial_number` | string | **Yes** | The unit's serial number |
+
+### Response `200 OK`
+
+```json
+{
+  "serialNumber": "ABC123456789",
+  "overallStatus": "partial",
+  "effectiveDate": "2023-06-15",
+  "coverages": [
+    {
+      "coverageType": "tank",
+      "coverageLabel": "Tank & Heat Exchanger",
+      "status": "active",
+      "effectiveDate": "2023-06-15",
+      "expirationDate": "2035-06-15",
+      "coverageTermMonths": 144,
+      "isProRated": true
+    },
+    {
+      "coverageType": "parts",
+      "coverageLabel": "Component Parts",
+      "status": "active",
+      "effectiveDate": "2023-06-15",
+      "expirationDate": "2035-06-15",
+      "coverageTermMonths": 144,
+      "isProRated": false
+    },
+    {
+      "coverageType": "labor",
+      "coverageLabel": "Labor",
+      "status": "expired",
+      "effectiveDate": "2023-06-15",
+      "expirationDate": "2024-06-15",
+      "coverageTermMonths": 12,
+      "isProRated": false
+    }
+  ],
+  "extendedAttributes": []
+}
+```
+
+Note the `overallStatus` of `"partial"` — this indicates that some tiers are still active (tank, parts) while others have expired (labor). See [`WarrantySummary`](/data-types/warranty) for all possible status values.
+
+### Used in
+
+- [Warranty verification](/process-flows/warranty-verification) — Coverage display
