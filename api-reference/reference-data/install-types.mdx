@@ -1,0 +1,78 @@
+---
+title: "Install types"
+description: "GET /v1/install-types — Valid installation types for a given model."
+---
+
+## `GET /v1/install-types`
+
+Retrieve the valid installation types for a given model number. Installation type affects warranty coverage terms — residential installations typically receive longer coverage than commercial ones — so it's important that contractors and homeowners select from a validated list rather than entering a free-text value.
+
+### Why this endpoint exists
+
+Not every product supports every installation type. A residential-only water heater shouldn't offer "Commercial" as an option during registration, and a light commercial unit may support both "Commercial" and "MultiFamily" but not "Residential." When the wrong installation type is recorded, it can silently alter the warranty coverage terms or cause claim rejections downstream.
+
+Some manufacturers have dedicated APIs that return valid install types per model because the options genuinely vary across their product catalog. Rather than hardcoding a universal list in Continuum, this endpoint lets each manufacturer return only the types that are valid for the specific product being registered or claimed against.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `ModelNumber` | string | **Yes** | The product model number to retrieve valid install types for |
+
+### Response `200 OK`
+
+```json
+{
+  "modelNumber": "EN6-50-DORT",
+  "installTypes": [
+    {
+      "code": "RES",
+      "label": "Residential",
+      "description": "Single-family home or residential dwelling",
+      "isDefault": true,
+      "affectsWarrantyTerms": true
+    },
+    {
+      "code": "COM",
+      "label": "Commercial",
+      "description": "Commercial property or business",
+      "isDefault": false,
+      "affectsWarrantyTerms": true
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `modelNumber` | string | The model number these install types apply to |
+| `installTypes` | array | Valid installation types for this model |
+| `installTypes[].code` | string | Machine-readable code — pass this value to other endpoints that accept `InstallationType` |
+| `installTypes[].label` | string | Human-readable label for display in dropdowns |
+| `installTypes[].description` | string | Explanation of when this type applies |
+| `installTypes[].isDefault` | boolean | Whether this is the default selection. Exactly one item should be `true`. |
+| `installTypes[].affectsWarrantyTerms` | boolean | Whether selecting this type changes the warranty coverage terms compared to other types. When `true`, Continuum displays a notice to the user that their selection impacts coverage. |
+
+### Response `200 OK` — single type only
+
+Some products only support one installation type. Return a single-element array:
+
+```json
+{
+  "modelNumber": "DERA-36-COMM",
+  "installTypes": [
+    {
+      "code": "COM",
+      "label": "Commercial",
+      "description": "Commercial property or business",
+      "isDefault": true,
+      "affectsWarrantyTerms": false
+    }
+  ]
+}
+```
+
+### Used in
+
+- [Product registration](/process-flows/registration) — Installation type selection
+- [Claims processing](/process-flows/claims-processing) — Phase 1, entitlement context

@@ -18,6 +18,8 @@ Retrieve available replacement parts for a failed part. Returns the original par
 
 ```json
 {
+  "inputPartNumber": "SP20042-AH",
+  "resolvedPartNumber": "SP20042",
   "replacementParts": [
     {
       "partNumber": "SP20042",
@@ -25,12 +27,13 @@ Retrieve available replacement parts for a failed part. Returns the original par
       "crossReferences": [
         { "referenceType": "upc", "partNumber": "020352330426" }
       ],
-      "brand": "Rheem",
+      "brand": "AcmeHeat",
       "isOEM": true,
       "replacementType": "exact",
       "inStock": true,
       "listPrice": 45.99,
       "warrantyPrice": 0.00,
+      "requiresSerialNumber": false,
       "score": 10,
       "scoreDetail": "Exact match — same part number",
       "images": [
@@ -49,12 +52,13 @@ Retrieve available replacement parts for a failed part. Returns the original par
       "crossReferences": [
         { "referenceType": "supersedes", "partNumber": "SP20042", "description": "Improved corrosion resistance" }
       ],
-      "brand": "Rheem",
+      "brand": "AcmeHeat",
       "isOEM": true,
       "replacementType": "superseded",
       "inStock": true,
       "listPrice": 52.99,
       "warrantyPrice": 0.00,
+      "requiresSerialNumber": false,
       "score": 9,
       "scoreDetail": "Manufacturer-recommended superseding replacement",
       "images": [],
@@ -63,6 +67,33 @@ Retrieve available replacement parts for a failed part. Returns the original par
   ]
 }
 ```
+
+### Part number resolution
+
+Manufacturers often normalize part numbers internally — stripping brand-specific suffixes, resolving legacy numbers to current ones, or mapping distributor part numbers to the canonical manufacturer part number. When the part number you submitted is resolved to a different canonical number, the response tells you exactly what happened:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `inputPartNumber` | string | The part number exactly as submitted in the `PartNumber` query parameter |
+| `resolvedPartNumber` | string \| null | The canonical part number your system resolved the input to. `null` when no resolution was needed (the input was already canonical). |
+
+When `resolvedPartNumber` is present, Continuum uses the resolved number for display and for any downstream operations (claim line items, cross-references, etc.). This prevents mismatches where the contractor enters one part number but the claim is filed against a different one.
+
+**Why this matters:** Some manufacturers add brand suffixes to part numbers in their distributor-facing systems (e.g., `SP20042-AH` for one brand, `SP20042-VA` for another) that their warranty system doesn't recognize. Others have legacy part numbers that have been superseded but still appear on old nameplates. Rather than rejecting these inputs, your middleware should resolve them and tell Continuum what the canonical number is.
+
+If your system does not perform part number normalization, return `null` for `resolvedPartNumber`.
+
+### Replacement serial number requirement
+
+Some replacement parts — typically major components like compressors, heat exchangers, or control boards — require the contractor to record the replacement part's serial number when installing it. This serial number is needed on the warranty claim for traceability and is often validated by the manufacturer during claim review.
+
+Each replacement part in the response includes a `requiresSerialNumber` flag:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `requiresSerialNumber` | boolean | When `true`, Continuum will prompt the contractor to enter the replacement part's serial number before the claim can be submitted. When `false`, no serial is required. |
+
+When Continuum sees `requiresSerialNumber: true`, it adds a required serial number field to the claim form for that line item. If the contractor tries to submit without it, the form blocks submission. This prevents claim rejections caused by missing part serials — a common reason for "needs corrections" status on claims.
 
 ### Replacement types
 

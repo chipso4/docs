@@ -17,6 +17,7 @@ The primary entitlement check used before filing a warranty claim. Returns detai
 | `StateCode` | string | No | State code of installation (may affect coverage terms) |
 | `CustomerId` | string | No | Distributor/customer account ID |
 | `InstallationType` | string | No | `"Residential"`, `"Commercial"`, `"MultiFamily"` |
+| `ForceRefresh` | boolean | No | When `true`, forces a recalculation of warranty contracts before returning results. See [Stale data and contract refresh](#stale-data-and-contract-refresh). Default: `false` |
 
 ### Response `200 OK`
 
@@ -24,9 +25,10 @@ The primary entitlement check used before filing a warranty claim. Returns detai
 {
   "serialNumberIsValid": true,
   "warrantyIsValid": true,
+  "staleDataPossible": false,
   "serialNo": "ABC123456789",
   "modelId": "EN6-50-DORT",
-  "brand": "Rheem",
+  "brand": "AcmeHeat",
   "installationType": "Residential",
   "installDate": "2023-06-15T00:00:00Z",
   "registrationDate": "2023-06-20T00:00:00Z",
@@ -112,11 +114,28 @@ The primary entitlement check used before filing a warranty claim. Returns detai
 
 | Field | Description |
 |-------|-------------|
+| `staleDataPossible` | When `true`, the warranty data returned may not reflect the most current state — for example, a recently completed registration that hasn't fully propagated through the ERP yet. Continuum will display a "Refresh" option to the user. See [Stale data and contract refresh](#stale-data-and-contract-refresh). |
 | `coverages` | Array of [`WarrantyCoverage`](/data-types/warranty) objects — one per coverage tier. This is the most important field for claim entitlement decisions. |
 | `laborRates` | Applicable [`LaborRateSchedule`](/data-types/warranty) with rate data in `extendedAttributes`. |
 | `claimSubmissionDeadlineDays` | How many days from the failure date a claim must be submitted. |
 | `homeowner` | Registered homeowner info — pre-fills the claims form. |
 | `purchaserDetails` | Distributor that sold the unit. |
+
+### Stale data and contract refresh
+
+Warranty backend systems sometimes have propagation delays. The most common scenario: a unit is registered today, which activates or extends warranty coverage, but the ERP's contract engine hasn't recalculated yet. An entitlement check made minutes later may still show the old (shorter) coverage — or no coverage at all.
+
+Your middleware should set `staleDataPossible` to `true` when it detects this situation. Common signals include:
+
+- All coverage tiers come back expired but the registration date is very recent (within the last 24–48 hours)
+- The unit is registered (`isSerialNumberRegistered: true`) but no active coverages are returned
+- Your ERP has a known batch-processing schedule and the data may not have been recalculated since the last run
+
+When Continuum sees `staleDataPossible: true`, it shows the contractor a "Refresh warranty data" button. Clicking it re-calls this endpoint with `ForceRefresh=true`.
+
+When your middleware receives `ForceRefresh=true`, it should trigger whatever mechanism your warranty backend provides to recalculate contracts for this serial before querying and returning the results. For example, some manufacturers expose a "refresh contracts" API that forces Oracle or SAP to recompute warranty coverage on demand. Others may simply need a cache bypass.
+
+If your system does not have propagation delays or does not support forced recalculation, always return `staleDataPossible: false` and ignore the `ForceRefresh` parameter.
 
 ### Used in
 

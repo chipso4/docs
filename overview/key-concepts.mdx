@@ -42,8 +42,8 @@ Many manufacturers extend warranty coverage for registered products or require r
 A single physical part is often known by multiple identifiers across the supply chain. As a manufacturer, the most common cross-reference scenarios are:
 
 - **Supersession** — a new part number replaces an older one (e.g., SP20042 supersedes SP20041)
-- **Brand cross-reference** — the same part sold under different brand names within your portfolio (e.g., Rheem SP20042 = Ruud SP20042-RU)
-- **OEM cross-reference** — the component supplier's own part number (e.g., your thermostat is Honeywell WV8840A1000)
+- **Brand cross-reference** — the same part sold under different brand names within your portfolio (e.g., BrandA SP20042 = BrandB SP20042-BB)
+- **OEM cross-reference** — the component supplier's own part number (e.g., your thermostat is made by a component supplier with their own part number)
 - **UPC / GTIN** — the universal barcode identifier
 
 Your API exposes these through `crossReferences` on part objects and through the dedicated `/v1/parts/cross-reference` endpoint.

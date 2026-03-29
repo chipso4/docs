@@ -1,11 +1,11 @@
 ---
 title: "Bill of materials"
-description: "GET /v1/bill-of-materials — Simplified BOM for the claims parts-selection step."
+description: "GET /v1/bill-of-materials — BOM for the claims parts-selection step, with serviceability flags."
 ---
 
 ## `GET /v1/bill-of-materials`
 
-Retrieve the BOM for a serial/model in the context of warranty claims. Returns a simplified parts list optimized for the claims parts-selection step — focused on part identification rather than full specs.
+Retrieve the BOM for a serial/model in the context of warranty claims. Returns a parts list optimized for the claims parts-selection step — focused on part identification and claimability rather than full specs.
 
 <Note>
 For the full BOM with specs, images, and cross-references, use [`GET /v1/units/{serial_number}/parts`](/api-reference/unit-data/unit-parts).
@@ -29,6 +29,7 @@ For the full BOM with specs, images, and cross-references, use [`GET /v1/units/{
       "partNumber": "SP20042",
       "description": "K,ANODE,29\",3/4\"NPT,.75\"DIA,ALUMINUM",
       "partType": "anode",
+      "isServiceable": true,
       "crossReferences": [
         { "referenceType": "supersedes", "partNumber": "SP20041" }
       ]
@@ -37,17 +38,38 @@ For the full BOM with specs, images, and cross-references, use [`GET /v1/units/{
       "partNumber": "SP10869GH",
       "description": "ELEMENT,SCREW-IN,4500W,240V,COPPER,HIGH DENSITY",
       "partType": "element",
+      "isServiceable": true,
       "crossReferences": []
     },
     {
       "partNumber": "SP8346",
       "description": "THERMOSTAT,UPPER,SNAP-DISC,170F",
       "partType": "thermostat",
+      "isServiceable": true,
+      "crossReferences": []
+    },
+    {
+      "partNumber": "TR-EN6-RING",
+      "description": "TRIM RING,DECORATIVE,WHITE",
+      "partType": "trim",
+      "isServiceable": false,
       "crossReferences": []
     }
   ]
 }
 ```
+
+### Serviceable vs. non-serviceable parts
+
+A unit's full bill of materials includes every component — but not every component is a valid selection on a warranty claim. A decorative trim ring, a shipping bracket, or a factory label are part of the physical BOM but cannot be claimed as a warranty failure. The `isServiceable` field distinguishes between the two:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `isServiceable` | boolean | `true` if this part can be selected as a failed part on a warranty claim. `false` if it's a non-claimable component (cosmetic parts, packaging hardware, labels, etc.). |
+
+Continuum uses this flag to control what the contractor sees in the "select failed part" step of claims processing. Parts with `isServiceable: false` are still returned in the response (for completeness and to support non-claims BOM views) but are excluded from the claims parts picker.
+
+**Why include non-serviceable parts at all?** Some workflows outside of claims — like the warranty verification page's "Replacement Parts" section — benefit from showing the complete BOM. By including all parts with a clear flag, you avoid needing to maintain two separate BOM responses. The full-detail endpoint [`GET /v1/units/{serial_number}/parts`](/api-reference/unit-data/unit-parts) also carries this same `isServiceable` field.
 
 ### Used in
 

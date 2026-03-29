@@ -19,6 +19,7 @@ Validate that a serial number exists in your system and return the associated mo
 ```json
 {
   "serialNumber": "ABC123456789",
+  "correctedSerialNumber": null,
   "modelNumbers": [
     {
       "modelNumber": "EN6-50-DORT",
@@ -31,11 +32,38 @@ Validate that a serial number exists in your system and return the associated mo
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `serialNumber` | string | The validated serial number |
+| `serialNumber` | string | The serial number as submitted in the request |
+| `correctedSerialNumber` | string \| null | The canonical serial number to use for all subsequent API calls, if it differs from the submitted value. `null` when no correction is needed. See [Serial number correction](#serial-number-correction) below. |
 | `modelNumbers` | array | One or more models associated with this serial. Multiple models may appear for multi-component systems. |
 | `modelNumbers[].modelNumber` | string | Model number |
 | `modelNumbers[].modelDescription` | string | Human-readable description |
 | `modelNumbers[].installDate` | datetime | Recorded installation date (if known) |
+
+### Serial number correction
+
+Some manufacturers maintain alternative or legacy serial number formats in their systems. When a contractor enters a serial number, the manufacturer's ERP may resolve it to a different canonical serial — for example, mapping an older format to a current one, or resolving a scan code to the official serial.
+
+When this happens, return the original input in `serialNumber` and the corrected value in `correctedSerialNumber`. Continuum will automatically replace the serial number in all subsequent API calls and display the corrected value to the user.
+
+**Example — serial correction applied:**
+
+```json
+{
+  "serialNumber": "E007009",
+  "correctedSerialNumber": "E007009-A1",
+  "modelNumbers": [
+    {
+      "modelNumber": "2MXS18GVJU",
+      "modelDescription": "2PORT,18,000BTU/H,HOR COND UNI",
+      "installDate": null
+    }
+  ]
+}
+```
+
+In this example, the contractor entered `E007009` but the manufacturer's system identifies the canonical serial as `E007009-A1`. Continuum will use `E007009-A1` for the entitlement check, BOM lookup, registration, and any other downstream calls.
+
+If your system does not perform serial number correction, always return `null` for this field.
 
 ### Response `404 Not Found`
 

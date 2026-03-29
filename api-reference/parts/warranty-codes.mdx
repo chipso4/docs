@@ -7,13 +7,24 @@ description: "GET /v1/products/warranty-codes — Hierarchical warranty disposit
 
 Retrieve the hierarchical warranty disposition codes for a given part. These codes classify why a part failed and are organized in a tree structure: general reason → specific reason → detail.
 
+### Why context filters matter
+
+Warranty codes aren't universal — the valid set of failure reasons changes depending on what's being claimed and how. A "Compressor failure" code doesn't make sense on a water heater claim. A code that's valid for a residential parts-and-service claim may not apply to a commercial unit exchange. Some codes are time-bounded and only selectable during a certain period.
+
+Manufacturers maintain rules internally that filter codes by claim type, unit type, part classification, and installation context. The context parameters on this endpoint let your middleware apply those same rules so the contractor only sees codes that are actually valid for their specific situation — reducing errors and preventing claim rejections caused by invalid code selections.
+
+If your system doesn't filter codes by these dimensions, you can ignore the optional parameters and return the full code tree. Continuum will accept whatever you return.
+
 ### Query parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `SerialNumber` | string | No | Serial number (may affect available codes) |
 | `ModelNumber` | string | No | Model number |
-| `PartNumber` | string | No | The specific part to get codes for |
+| `PartNumber` | string | No | The specific failed part to get codes for |
+| `ClaimType` | string | No | The claim type code (e.g., `"WPS"`, `"WUE"`). When provided, only return codes that are valid for this claim type. Different claim types often have different applicable failure reasons. |
+| `UnitType` | string | No | The unit or product type classification. When provided, only return codes applicable to this unit category. Prevents codes meant for one product category (e.g., HVAC) from appearing on another (e.g., water heater). |
+| `InstallationType` | string | No | `"Residential"`, `"Commercial"`, `"MultiFamily"`. When provided, only return codes valid for this installation context. Some failure classifications are specific to commercial installations. |
 
 ### Response `200 OK`
 
@@ -62,6 +73,8 @@ Retrieve the hierarchical warranty disposition codes for a given part. These cod
         {
           "id": "TANK-LEAK",
           "description": "Tank leak",
+          "fullPath": "Leak / Water Damage > Tank leak",
+          "idPath": "LEAK/TANK-LEAK",
           "requiresAttachment": true,
           "children": []
         }
