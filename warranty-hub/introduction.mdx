@@ -16,74 +16,64 @@ The Warranty Hub handles two workflows that sit on top of the Returns Hub founda
 
 2. **Vendor returns** — The defective part needs to go back to the OEM/manufacturer (or be scrapped in field). Continuum creates a vendor return in your ERP to manage that reverse logistics flow.
 
-## The full warranty event
+## What you build
 
-A warranty event spans all three hubs. Here is every API call in order, grouped by phase.
+These are the endpoints your ERP integration implements. All use the V2 base: `/api/btu/v2/`.
 
-**Phase 0 — Invoice caching** *(background, Returns Hub → ERP)*
-
-| | Method | Endpoint | Returns |
-|-|--------|----------|---------|
-| 0a | GET | [`/invoices`](/api-reference/invoices/search-invoices) | [CoreInvoice[]](/data-types/core-objects#coreinvoice) |
-| 0b | GET | [`/invoice/{invoiceNumber}`](/api-reference/invoices/invoice-details) | [CoreInvoice](/data-types/core-objects#coreinvoice) + lines |
-
-**Phase 1 — Identify the defect** *(Claims Hub → OEM)*
-
-| | Method | Endpoint | Returns | Notes |
-|-|--------|----------|---------|-------|
-| 1a | GET | [`/validate-unit`](/api-reference/unit-data/validate-unit) | Model, isValid | *Only if brand supports serial lookup* |
-| 1b | GET | [`/bill-of-materials`](/api-reference/parts/bill-of-materials) | Parts list + images | Customer selects failed part |
-| 1c | GET | [`/products/replacements`](/api-reference/parts/replacements) | Replacement options | Handles superseded parts |
-| 1d | GET | [`/products/reason-codes`](/api-reference/parts/warranty-codes) | Failure reason codes | Part-specific |
-
-**Phase 2 — Replace the part** *(Warranty Hub → ERP)*
+**Shared foundation** *(from [Returns Hub](/returns-hub/introduction) — build once, reuse here)*
 
 | | Method | Endpoint | Returns |
 |-|--------|----------|---------|
-| 2a | GET | [`/parts?checkAvailability=true`](/api-reference/products/availability) | [CorePart](/data-types/core-objects#corepart) + stock |
-| 2b | GET | [`/parts?CustomerId={id}`](/api-reference/products/pricing-customer) | [CorePart](/data-types/core-objects#corepart) + price |
-| 2c | POST | [`/order`](/api-reference/orders/create-order) | [CoreOrder](/data-types/core-objects#coreorder) |
-| 2d | GET | [`/orders?OrderNumbers={id}`](/api-reference/orders/order-status) | [CoreOrder](/data-types/core-objects#coreorder) + invoice status |
-| 2e | GET | [`/invoices?OrderNumber={id}`](/api-reference/orders/order-invoices) | [CoreInvoice](/data-types/core-objects#coreinvoice) |
+| 1 | GET | [`/invoices`](/api-reference/invoices/search-invoices) | [CoreInvoice[]](/data-types/core-objects#coreinvoice) |
+| 2 | GET | [`/invoice/{invoiceNumber}`](/api-reference/invoices/invoice-details) | [CoreInvoice](/data-types/core-objects#coreinvoice) + lines |
+| 3 | GET | [`/parts?checkAvailability=true`](/api-reference/products/availability) | [CorePart](/data-types/core-objects#corepart) + stock |
+| 4 | GET | [`/parts?CustomerId={id}`](/api-reference/products/pricing-customer) | [CorePart](/data-types/core-objects#corepart) + price |
 
-> ⏸ **Gate:** Replacement order must be invoiced before Phase 3.
+**Replacement orders** *(Phase 2)*
 
-**Phase 3 — File the warranty claim** *(Claims Hub → OEM)*
+| | Method | Endpoint | Returns |
+|-|--------|----------|---------|
+| 5 | POST | [`/order`](/api-reference/orders/create-order) | [CoreOrder](/data-types/core-objects#coreorder) |
+| 6 | GET | [`/order/{orderNumber}`](/api-reference/orders/get-order) | [CoreOrder](/data-types/core-objects#coreorder) |
+| 7 | GET | [`/orders?OrderNumbers={id}`](/api-reference/orders/order-status) | [CoreOrder](/data-types/core-objects#coreorder) + invoice status |
+| 8 | GET | [`/invoices?OrderNumber={id}`](/api-reference/orders/order-invoices) | [CoreInvoice](/data-types/core-objects#coreinvoice) |
+| 9 | PUT | [`/order/{orderNumber}`](/api-reference/orders/get-order) | [CoreOrder](/data-types/core-objects#coreorder) *(cancel, update lines/pricing)* |
+
+**Vendor returns** *(Phase 4)*
 
 | | Method | Endpoint | Purpose |
 |-|--------|----------|---------|
-| 3a | POST | `/claim/validate` | Pre-validate (dry run) |
-| 3b | POST | `/claim` | Submit the claim |
-| 3c | POST | `/claim/upload-attachment` | Upload supporting docs |
-| 3d | GET | `/claim/status` | Poll for approval |
-| 3e | PATCH | `/claim` | Update if corrections needed |
+| 10 | POST | [`/vendor-return`](/api-reference/vendor-returns/create-vendor-return) | Create vendor return |
+| 11 | GET | [`/vendor-return/{id}`](/api-reference/vendor-returns/get-vendor-return) | Get vendor return details |
+| 12 | PATCH | [`/vendor-return/approve`](/api-reference/vendor-returns/approve) | Approve for processing |
+| 13 | PATCH | [`/vendor-return/picked`](/api-reference/vendor-returns/picked) | Mark items picked |
+| 14 | PATCH | [`/vendor-return/ship`](/api-reference/vendor-returns/ship) | Record shipment to vendor |
 
-> ⏸ **Gate:** Claim must be approved before Phase 4.
-
-See [Claim flow](/warranty-claims-hub/claim-flow) for full endpoint specs.
-
-**Phase 4 — Handle the defective part** *(Warranty Hub → ERP)*
-
-| | Method | Endpoint | Returns |
-|-|--------|----------|---------|
-| 4a | POST | [`/vendor-return`](/api-reference/vendor-returns/create-vendor-return) | Vendor return created |
-| 4b | PATCH | [`/vendor-return/approve`](/api-reference/vendor-returns/approve) | Approved |
-| 4c | PATCH | [`/vendor-return/picked`](/api-reference/vendor-returns/picked) | Picked |
-| 4d | PATCH | [`/vendor-return/ship`](/api-reference/vendor-returns/ship) | Shipped |
-
-*Or scrap-in-field — no vendor return created.*
-
-**Phase 5 — Credit the customer** *(Returns Hub → ERP)*
+**RMA finalization** *(Phase 5 — same [Returns Hub](/returns-hub/introduction) RMA endpoints)*
 
 | | Method | Endpoint | Purpose |
 |-|--------|----------|---------|
-| 5a | PUT | [`/rma/{rmaNumber}`](/api-reference/returns/acknowledge) | Finalize RMA (DRAFT → FINAL) |
-| 5b | PUT | [`/rma/{rmaNumber}`](/api-reference/returns/receive) | Receive defective part |
-| 5c | PUT | [`/rma/{rmaNumber}`](/api-reference/returns/credit-lines) | Issue credit → offsets replacement order |
+| 15 | POST | [`/rma`](/api-reference/returns/create-return) | Create RMA (DRAFT status) |
+| 16 | PUT | [`/rma/{rmaNumber}`](/api-reference/returns/acknowledge) | Finalize RMA (DRAFT → FINAL) |
+| 17 | PUT | [`/rma/{rmaNumber}`](/api-reference/returns/receive) | Receive defective part |
+| 18 | PUT | [`/rma/{rmaNumber}`](/api-reference/returns/credit-lines) | Issue credit → offsets replacement order |
 
-<Info>
-All endpoints use the V2 base: `/api/btu/v2/`. Phase 3 claim endpoints connect to the OEM, not your ERP — see the [Claims Hub](/warranty-claims-hub/introduction). Phase 5 uses the same [`CoreRma`](/data-types/core-objects#corerma) PUT pattern as the Returns Hub.
-</Info>
+[Full implementation checklist →](/warranty-hub/implementation-checklist)
+
+## How it fits in the warranty event
+
+A warranty event is an end-to-end process across multiple systems. Your ERP integration handles Phases 0, 2, 4, and 5. Phases 1 and 3 happen between Continuum and the OEM — you don't build those.
+
+| Phase | What happens | Who builds it |
+|-------|-------------|---------------|
+| **0. Invoice caching** | Continuum bulk-loads invoices from your ERP | **You** (endpoints 1–2 above) |
+| 1. Identify the defect | Continuum validates the serial and retrieves the BOM from the OEM | *OEM — not your scope* |
+| **2. Replace the part** | Continuum creates a replacement sales order in your ERP, polls until invoiced | **You** (endpoints 5–9 above) |
+| 3. File the warranty claim | Continuum submits the claim to the OEM with the invoice details | *OEM — not your scope* |
+| **4. Handle defective part** | Continuum creates a vendor return in your ERP (or records scrap) | **You** (endpoints 10–14 above) |
+| **5. Credit the customer** | Continuum finalizes the RMA and issues a credit that offsets the replacement order | **You** (endpoints 15–18 above) |
+
+> The two gates between phases: the replacement order must be **invoiced** before the claim is filed (Phase 2 → 3), and the claim must be **approved** before the vendor return and credit are processed (Phase 3 → 4/5). Both gates are managed by Continuum — your ERP just needs to respond to the API calls.
 
 [See the full warranty flow with sequence diagrams →](/warranty-hub/warranty-flow)
 
