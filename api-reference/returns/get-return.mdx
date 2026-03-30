@@ -1,0 +1,131 @@
+---
+title: "Get return (RMA)"
+description: "GET /v1/return — Retrieve details for a specific RMA as a CoreRma entity."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/return`
+
+Retrieve full details for a specific RMA. Returns a [`CoreRma`](/data-types/core-objects#corerma) entity with line items, account locations, and credit details.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `RmaNumber` | string | **Yes** | The RMA number |
+
+### Response `200 OK`
+
+```json
+{
+  "rmaNumber": "RMA-2026-00100",
+  "status": "OPEN",
+  "createdDate": "2026-03-10T15:00:00Z",
+  "returnType": "STOCK_RETURN",
+  "requestedRemedy": "CREDIT",
+  "currency": "USD",
+  "customerId": "C-827451",
+  "customerName": "Northern Manufacturing Inc.",
+  "originalOrderNumber": "SO-2026-04100",
+  "replacementOrderNumber": null,
+  "billTo": {
+    "accountNumber": "C-827451",
+    "accountName": "Northern Manufacturing Inc.",
+    "accountType": "BillTo",
+    "location": {
+      "locationId": "4894",
+      "locationName": "Corporate Billing",
+      "locationType": "billto",
+      "address": {
+        "address1": "500 Commerce St",
+        "city": "Dallas",
+        "stateCode": "TX",
+        "zip": "75201",
+        "countryCode": "US"
+      }
+    }
+  },
+  "shipTo": {
+    "accountNumber": "C-827451",
+    "accountName": "Northern Manufacturing Inc.",
+    "accountType": "ShipTo",
+    "location": {
+      "locationId": "4893",
+      "locationName": "Dallas Main Warehouse",
+      "locationType": "shipto",
+      "address": {
+        "address1": "1200 Industrial Blvd",
+        "address2": "Suite 300",
+        "city": "Dallas",
+        "stateCode": "TX",
+        "zip": "75207",
+        "countryCode": "US"
+      },
+      "primaryContact": {
+        "contactId": "CTX-9012",
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "contactType": "Shipping"
+      }
+    }
+  },
+  "returnTo": {
+    "accountType": "ReturnTo",
+    "location": {
+      "locationId": "WH-10",
+      "locationName": "Dallas Main Warehouse",
+      "locationType": "warehouse"
+    }
+  },
+  "submitterName": "Jane Smith",
+  "submitterEmail": "jane.smith@example.com",
+  "submitterPhone": "214-555-0101",
+  "carrierCode": "UPS",
+  "creditAmount": null,
+  "evaluationNotes": "Customer ordered wrong motor size",
+  "items": [
+    {
+      "lineNumber": "1",
+      "partNo": "PROD-12345",
+      "description": "Heavy-Duty Industrial Motor 5HP",
+      "quantity": 1,
+      "unitOfMeasure": "EA",
+      "unitPrice": 249.99,
+      "lineStatus": "OPEN",
+      "returnReasonCode": "WRONG_ITEM",
+      "assignedRemedy": "CREDIT",
+      "invoiceNumber": "INV-2026-00520",
+      "invoiceDate": "2026-03-15T00:00:00Z",
+      "originalPrice": 249.99,
+      "creditPrice": null,
+      "manufacturerPartNo": "MFR-MOT-5HP",
+      "vendorPartNo": "V-5010-MOT5",
+      "dispositionCode": null,
+      "serialNumbers": ["SN-00998877"],
+      "extendedAttributes": []
+    }
+  ],
+  "extendedAttributes": []
+}
+```
+
+The response follows the full [`CoreRma`](/data-types/core-objects#corerma) schema. Key nested types:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `billTo` | [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) | Bill-to account and address |
+| `shipTo` | [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) | Ship-to account and address |
+| `returnTo` | [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) | Where items should be returned |
+| `endCustomer` | [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) | End customer (warranty flow) |
+| `items` | [`CoreRmaReturnItem[]`](/data-types/core-objects#corermareturniitem) | RMA line items with invoice linkage and credit details |
+
+See the [core objects reference](/data-types/core-objects) for full field listings.
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Retrieve RMA status
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 5: verify RMA before finalization

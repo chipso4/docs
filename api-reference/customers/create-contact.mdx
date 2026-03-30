@@ -1,0 +1,48 @@
+---
+title: "Create contact"
+description: "POST /v1/customers/contacts — Create a new contact for a customer."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+</div>
+
+## `POST /v1/customers/contacts`
+
+Create a new contact for a customer.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `customerId` | string | **Yes** | The customer's unique identifier |
+
+### Request body
+
+```json
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "john.smith@example.com",
+  "phone": "555-123-4567"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `firstName` | string | **Yes** | First name |
+| `lastName` | string | **Yes** | Last name |
+| `email` | string | **Yes** | Email address |
+| `phone` | string | **Yes** | Primary phone number |
+
+### Response `201 Created`
+
+```json
+{
+  "customerId": "C-827451",
+  "contactId": "CTX-9050",
+  "firstName": "John",
+  "lastName": "Smith",
+  "emailAddress": "john.smith@example.com"
+}
+```

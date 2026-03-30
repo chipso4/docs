@@ -1,0 +1,48 @@
+---
+title: "Warranty reason codes"
+description: "GET /v1/codes/warranty-reasons — Valid warranty claim reason codes."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/codes/warranty-reasons`
+
+Retrieve all available warranty reason codes. These classify the warranty claim type when creating replacement orders or vendor returns.
+
+### Response `200 OK`
+
+```json
+{
+  "reasonCodes": [
+    {
+      "code": "DOA",
+      "description": "Dead on arrival — unit failed during initial installation"
+    },
+    {
+      "code": "PREMATURE_FAILURE",
+      "description": "Unit failed within warranty period under normal use"
+    },
+    {
+      "code": "MANUFACTURER_RECALL",
+      "description": "Product recalled by manufacturer"
+    },
+    {
+      "code": "COMPONENT_DEFECT",
+      "description": "Specific component failure covered under parts warranty"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `reasonCodes` | array | List of warranty reason code objects |
+| `reasonCodes[].code` | string | Short code for the warranty reason |
+| `reasonCodes[].description` | string | Human-readable description |
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 2: replacement order context
+- [Vendor returns](/warranty-hub/vendor-returns) — Return reason classification

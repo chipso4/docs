@@ -1,0 +1,98 @@
+---
+title: "Create sales order"
+description: "POST /v1/sales-order — Create a replacement sales order using the CoreOrder entity model."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `POST /v1/sales-order`
+
+Create a new sales order for a warranty replacement. The request body follows the [`CoreOrder`](/data-types/core-objects#coreorder) schema with [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) for addresses and [`CoreOrderItem`](/data-types/core-objects#coreorderitem) for line items. The part is typically picked and handed to the customer at the counter.
+
+### Request body
+
+```json
+{
+  "orderType": "WARRANTY_REPLACEMENT",
+  "customerId": "C-827451",
+  "customerName": "Northern Manufacturing Inc.",
+  "customerPO": "PO-99001",
+  "paymentTermsCode": "NET30",
+  "salesRepId": "SR-100",
+  "billTo": {
+    "accountNumber": "C-827451",
+    "accountName": "Northern Manufacturing Inc.",
+    "accountType": "BillTo",
+    "location": {
+      "locationId": "4894",
+      "locationName": "Corporate Billing",
+      "locationType": "billto",
+      "address": {
+        "address1": "500 Commerce St",
+        "city": "Dallas",
+        "stateCode": "TX",
+        "zip": "75201",
+        "countryCode": "US"
+      }
+    }
+  },
+  "shipTo": {
+    "accountNumber": "C-827451",
+    "accountName": "Northern Manufacturing Inc.",
+    "accountType": "ShipTo",
+    "location": {
+      "locationId": "4893",
+      "locationName": "Dallas Main Warehouse",
+      "locationType": "shipto",
+      "address": {
+        "address1": "1200 Industrial Blvd",
+        "address2": "Suite 300",
+        "city": "Dallas",
+        "stateCode": "TX",
+        "zip": "75207",
+        "countryCode": "US"
+      }
+    }
+  },
+  "items": [
+    {
+      "lineNumber": "1",
+      "partNo": "PROD-12345",
+      "description": "Heavy-Duty Industrial Motor 5HP",
+      "quantity": 1,
+      "unitOfMeasure": "EA",
+      "unitPrice": 249.99,
+      "subinventory": "WH-10"
+    }
+  ],
+  "taxTotal": 20.62,
+  "extendedAttributes": []
+}
+```
+
+The request follows the [`CoreOrder`](/data-types/core-objects#coreorder) schema. Required fields:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `customerId` | string | **Yes** | Customer identifier |
+| `billTo` | [CoreAccountLocation](/data-types/core-objects#coreaccountlocation) | **Yes** | Bill-to account and address |
+| `shipTo` | [CoreAccountLocation](/data-types/core-objects#coreaccountlocation) | **Yes** | Ship-to account and address |
+| `items` | [CoreOrderItem[]](/data-types/core-objects#coreorderitem) | **Yes** | At least one line item |
+| `items[].partNo` | string | **Yes** | Product/part number |
+| `items[].quantity` | decimal | **Yes** | Quantity to order |
+| `items[].unitPrice` | decimal | **Yes** | Unit price |
+| `items[].unitOfMeasure` | string | **Yes** | Unit of measure |
+| `paymentTermsCode` | string | **Yes** | Payment terms code |
+
+All other fields from the `CoreOrder` schema are optional. See the [core objects reference](/data-types/core-objects#coreorder) for the full field listing.
+
+### Response `201 Created`
+
+Returns the full [`CoreOrder`](/data-types/core-objects#coreorder) entity as created in the ERP, including the assigned `orderNumber` and `status`. See [GET /v1/sales-order](/api-reference/orders/get-order) for the response shape.
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 2: create replacement order
+- [Replacement orders](/warranty-hub/replacement-orders) — Order creation

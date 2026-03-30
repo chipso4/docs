@@ -1,68 +1,94 @@
 ---
 title: "Architecture"
-description: "How the middleware API fits between Continuum and your systems of record."
+description: "How the three integration hubs fit together and where your middleware sits."
 ---
+
+## The three hubs
+
+Continuum's integration surface is organized into three hubs. Each hub serves a different business process, but they share a common foundation.
+
+| Hub | Product tag | Direction | Purpose |
+|-----|-------------|-----------|---------|
+| **Returns Hub** | `btuReturns` | Continuum → Your ERP | Non-defect product returns. Full RMA lifecycle. Also provides the shared foundation (customers, products, invoices) used by all hubs. |
+| **Warranty Hub** | `btuWarranties` | Continuum → Your ERP | Warranty replacement orders and vendor returns. Orchestrates the full warranty event across all three hubs. |
+| **Warranty Claims Hub** | `btuWarrantyVendor` | Continuum → OEM API | OEM-facing claim processing. Serial validation, BOM lookups, claim submission to the manufacturer. |
+
+<Info>
+You may use one, two, or all three hubs depending on your needs. Each hub has self-contained documentation. But they can also work together as phases in a single warranty event.
+</Info>
 
 ## Integration architecture
 
-The middleware API is the integration boundary between Continuum and your internal systems. Continuum defines the contract (this documentation). Your IT team implements it, mapping your internal data to the agreed-upon JSON schemas.
+The Returns and Warranty hubs talk to the **distributor's ERP**. The Claims hub talks to the **OEM/manufacturer's API**. These are separate systems with separate authentication.
 
-<Frame>
-  <img src="/images/architecture-diagram.svg" alt="Integration architecture showing Consumer, Contractor, and Distributor connecting to Continuum, which connects via HTTPS to your middleware API, which connects to your ERP, Warranty DB, Legacy systems, and Document storage." />
-</Frame>
+```
+                        ┌──────────────────────────────────────┐
+                        │           Continuum Platform          │
+                        │                                      │
+                        │  Consumer portal · Contractor portal │
+                        │  Claims workflow · Returns workflow   │
+                        └───────┬──────────────────┬───────────┘
+                                │                  │
+                    ┌───────────▼────────┐  ┌──────▼───────────┐
+                    │  Your ERP API       │  │  OEM / Mfr API    │
+                    │  (you build this)   │  │  (mfr builds this)│
+                    │                    │  │                   │
+                    │  Returns Hub       │  │  Claims Hub       │
+                    │  Warranty Hub      │  │  Serial validation│
+                    │                    │  │  BOM lookups      │
+                    │  Customers         │  │  Claim CRUD       │
+                    │  Invoices          │  │                   │
+                    │  Products          │  │                   │
+                    │  RMAs              │  │                   │
+                    │  Sales orders      │  │                   │
+                    │  Vendor returns    │  │                   │
+                    └───────┬────────────┘  └──────┬───────────┘
+                            │                      │
+                    ┌───────▼────────┐      ┌──────▼───────────┐
+                    │  Your ERP       │      │  Mfr systems      │
+                    │  (SAP, Oracle,  │      │  (ERP, warranty   │
+                    │   Epicor, etc.) │      │   DB, PIM)        │
+                    └────────────────┘      └──────────────────┘
+```
 
-The dashed border around **Your middleware** represents the API layer you build and host. Everything to the left is Continuum's responsibility. Everything to the right is your existing infrastructure.
+## Shared foundation
 
-## What Continuum calls
+The Returns Hub provides the shared foundation consumed by the Warranty Hub. These endpoints are built once and reused:
 
-Continuum makes outbound HTTPS calls to your middleware API. All communication is:
+- **Authentication** — OAuth2 client credentials (`POST /oauth2/token`)
+- **Health** — Service health check (`GET /health`)
+- **Customers** — Lookup, contacts, addresses (ship-to, bill-to, sold-to)
+- **Products** — Details, availability, pricing, cross-reference
+- **Invoices** — Headers, line items, date-range search
+- **Locations** — Warehouse locations, bins
+- **Reference codes** — RMA reasons, ship vias, adjustment reasons
 
-- **REST over HTTPS** — Standard JSON request/response
-- **Authenticated via OAuth2** — Client credentials flow; Continuum obtains a bearer token before making calls
-- **Initiated by Continuum** — Your middleware is a server that responds to Continuum's requests. You don't need to call Continuum (except for optional webhook notifications).
+Build these for Returns. They carry over to Warranty automatically.
 
-## What your middleware does
+## How the hubs orchestrate in a warranty event
 
-Your middleware is a translation layer. It receives Continuum's standardized JSON requests and:
+When all three hubs are active, a warranty event flows through five phases:
 
-<Steps>
-  <Step title="Authenticates">
-    Validates the OAuth2 bearer token on each request.
-  </Step>
-  <Step title="Translates">
-    Converts the request into whatever your backend systems expect — SQL queries, BAPI calls, API calls, file reads, etc.
-  </Step>
-  <Step title="Retrieves or updates">
-    Gets or writes data in your systems of record.
-  </Step>
-  <Step title="Transforms">
-    Converts the response back into the JSON schema Continuum expects.
-  </Step>
-  <Step title="Returns">
-    Sends the JSON response back to Continuum.
-  </Step>
-</Steps>
+| Phase | What happens | Hub | System |
+|-------|-------------|-----|--------|
+| **0** | Bulk invoice caching (background) | Returns | ERP |
+| **1** | Brand selection → serial/model validation → BOM → select failed part | Claims | OEM |
+| **2** | Check inventory → create replacement order → hand part to customer → wait for invoice | Warranty | ERP |
+| **3** | Gather claim details → submit to manufacturer → wait for approval | Claims | OEM |
+| **4** | Create vendor return (or scrap in field) | Warranty | ERP |
+| **5** | Finalize RMA → issue credit that offsets the replacement order | Returns | ERP |
 
-<Note>
-Your middleware can be built with any technology stack — .NET, Java, Node.js, Python, Go, or anything else that can serve an HTTPS REST API. The only requirement is that it conforms to the endpoint contracts in this documentation.
-</Note>
+Two gates control the flow: the replacement order must be **invoiced** before the claim is submitted (Phase 2 → 3), and the claim must be **approved** before the vendor return and credit are processed (Phase 3 → 4/5).
 
-## Source systems
-
-Your middleware will likely need to connect to one or more internal systems:
-
-| System | What it provides | Example endpoints it powers |
-|--------|-----------------|---------------------------|
-| **ERP** | Unit/serial data, sales transactions, BOM, distributor info, contractor directory | Unit lookup, entitlement, parts, distributor |
-| **Warranty database** | Coverage terms, entitlement rules, warranty codes, rate tables | Entitlement info, warranty coverages, labor rates |
-| **Document / media storage** | Manuals, spec sheets, images, diagrams | Media endpoints |
-| **Legacy systems** | Historical registrations, older product data | Historical import |
-
-The specific systems vary by manufacturer. Some have everything in SAP. Others have a separate warranty system alongside their ERP. Some store documents in a shared drive or CDN. Your middleware abstracts all of this behind a single API surface.
+[See the full warranty flow with sequence diagrams →](/warranty-hub/warranty-flow)
 
 ## Security
 
-- **Transport:** All API traffic must be over HTTPS (TLS 1.2+)
-- **Authentication:** OAuth2 client credentials. Continuum presents a bearer token with every request.
-- **Network:** You control network access. You can restrict inbound traffic to Continuum's IP ranges, require VPN, or use any other network-level controls your security team requires.
+- **Transport:** All API traffic is over HTTPS (TLS 1.2+)
+- **Authentication:** OAuth2 client credentials. Continuum presents a bearer token with every request. ERP and OEM endpoints use separate tokens.
+- **Network:** You control network access. You can restrict inbound traffic to Continuum's IP ranges, require VPN, or use any other network-level controls.
 - **Data:** Your middleware controls exactly what data is exposed. You can filter, redact, or transform any field before returning it.
+
+## Technology stack
+
+Your middleware can be built with any technology stack — .NET, Java, Node.js, Python, Go — as long as it serves an HTTPS REST API conforming to the endpoint contracts in this documentation. Continuum makes outbound HTTPS calls to your middleware. All communication is standard JSON request/response.

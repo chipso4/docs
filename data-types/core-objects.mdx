@@ -1,49 +1,21 @@
 ---
 title: "Core objects"
-description: "Address, DataAttribute, pagination, and error response — the building blocks used across all endpoints."
+description: "The V2 unified entity types that power all three integration hubs."
 ---
 
-## Address
-
-A standard address structure used wherever physical addresses appear.
-
-```json
-{
-  "address1": "1200 Industrial Blvd",
-  "address2": "Suite 300",
-  "address3": null,
-  "city": "Nashville",
-  "state": "Tennessee",
-  "stateCode": "TN",
-  "zip": "37201",
-  "country": "United States",
-  "countryCode": "US"
-}
-```
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `address1` | string | No | Primary street address |
-| `address2` | string | No | Secondary line (suite, unit) |
-| `address3` | string | No | Additional line |
-| `city` | string | No | City |
-| `state` | string | No | State/province full name |
-| `stateCode` | string | No | State/province abbreviation |
-| `zip` | string | No | Postal/zip code |
-| `country` | string | No | Country full name |
-| `countryCode` | string | No | ISO 3166-1 alpha-2 code (e.g., `"US"`, `"CA"`) |
+These are the canonical data types from `primary-data-types.json`. All API responses use these shapes. All fields are nullable unless marked required — this accommodates ERP systems that may not populate every field.
 
 ---
 
 ## DataAttribute
 
-The extensibility mechanism for the entire API. A generic name-value pair for adding manufacturer-specific data to any entity — product specs, industry-specific fields, ERP codes, rate structures, and anything else that doesn't fit the standard schema.
+The extensibility mechanism for the entire API. A generic name-value pair for adding custom data to any entity.
 
 ```json
 {
-  "name": "CapacityGallons",
-  "value": "50",
-  "section": "Capacity"
+  "name": "TaxExempt",
+  "value": "true",
+  "section": "Tax"
 }
 ```
 
@@ -51,9 +23,9 @@ The extensibility mechanism for the entire API. A generic name-value pair for ad
 |-------|------|----------|-------------|
 | `name` | string | **Yes** | Attribute name |
 | `value` | string | No | Attribute value |
-| `section` | string | No | Logical grouping for UI display |
+| `section` | string | No | Logical grouping for UI display (e.g., `"Tax"`, `"Capacity"`, `"Electrical"`) |
 
-**The `section` field** enables Continuum to group attributes visually. Use consistent section names across your catalog:
+<Accordion title="Recommended section names">
 
 | Section | Example attributes |
 |---------|-------------------|
@@ -65,6 +37,640 @@ The extensibility mechanism for the entire API. A generic name-value pair for ad
 | `Refrigerant` | RefrigerantType, RefrigerantChargeOz |
 | `Classification` | ERPMaterialGroup, ProductClass |
 | `Service` | InstallationNotes, MaintenanceInterval |
+| `Tax` | TaxExempt, TaxExemptNumber |
+
+</Accordion>
+
+---
+
+## CoreAddress
+
+Unified address value object. Used wherever physical addresses appear across all entities.
+
+```json
+{
+  "address1": "1200 Industrial Blvd",
+  "address2": "Suite 300",
+  "address3": "Building C",
+  "city": "Dallas",
+  "state": "Texas",
+  "stateCode": "TX",
+  "zip": "75207",
+  "country": "United States",
+  "countryCode": "US",
+  "attentionLine": "Attn: Receiving Dept"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `address1` | string | Primary street address |
+| `address2` | string | Secondary line (suite, unit) |
+| `address3` | string | Additional line |
+| `city` | string | City |
+| `state` | string | State/province full name |
+| `stateCode` | string | State/province abbreviation |
+| `zip` | string | Postal/zip code |
+| `country` | string | Country full name |
+| `countryCode` | string | ISO 3166-1 alpha-2 code (e.g., `"US"`, `"CA"`) |
+| `attentionLine` | string | Attention line for the address |
+
+---
+
+## CoreContact
+
+Standalone contact entity. Contacts are first-class citizens — not embedded fields on a location.
+
+```json
+{
+  "contactId": "CTX-9012",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "title": "Warehouse Manager",
+  "email": "jane.smith@example.com",
+  "phone": "214-555-0101",
+  "mobile": "214-555-0102",
+  "fax": "214-555-0199",
+  "contactType": "Shipping",
+  "isPrimary": true,
+  "isActive": true,
+  "address": { },
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `contactId` | string | Unique identifier |
+| `firstName` | string | First name |
+| `lastName` | string | Last name |
+| `title` | string | Job title |
+| `email` | string | Email address |
+| `phone` | string | Primary phone |
+| `mobile` | string | Mobile phone |
+| `fax` | string | Fax number |
+| `contactType` | string | ERP-specific classification (e.g., `"Billing"`, `"Shipping"`, `"AP"`). String by design — each ERP maps their own values. |
+| `isPrimary` | boolean | Whether this is the primary contact |
+| `isActive` | boolean | Whether the contact is active |
+| `address` | [CoreAddress](#coreaddress) | Contact address |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CoreLocation
+
+Unified location entity. Replaces the V1 split between `LocationBase` and `LocationDetails`. Covers warehouses, branches, ship-to, bill-to, and sold-to addresses.
+
+```json
+{
+  "locationId": "4893",
+  "locationCode": "WH-DALLAS-01",
+  "locationName": "Dallas Main Warehouse",
+  "locationType": "shipto",
+  "isActive": true,
+  "address": {
+    "address1": "1200 Industrial Blvd",
+    "address2": "Suite 300",
+    "city": "Dallas",
+    "state": "Texas",
+    "stateCode": "TX",
+    "zip": "75207",
+    "country": "United States",
+    "countryCode": "US"
+  },
+  "phone": "214-555-0100",
+  "email": "warehouse.dallas@example.com",
+  "primaryContact": {
+    "contactId": "CTX-9012",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "contactType": "Shipping",
+    "isPrimary": true
+  },
+  "glnNumber": "0012345000015",
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `locationId` | string | Unique identifier |
+| `locationCode` | string | Short code (e.g., `"WH-DALLAS-01"`) |
+| `locationName` | string | Display name |
+| `locationType` | string | Classification (e.g., `"shipto"`, `"billto"`, `"soldto"`, `"warehouse"`, `"branch"`). String by design — each ERP maps their own values. |
+| `isActive` | boolean | Whether the location is active |
+| `address` | [CoreAddress](#coreaddress) | Physical address |
+| `phone` | string | Primary phone |
+| `email` | string | Primary email |
+| `primaryContact` | [CoreContact](#corecontact) | Primary contact at this location |
+| `glnNumber` | string | Global Location Number for EDI/supply chain identification |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CoreOrganization
+
+Unified organization entity. Merges Customer, Vendor, Supplier, and Corporation into a single type differentiated by `organizationType`.
+
+```json
+{
+  "organizationId": "C-827451",
+  "organizationName": "Northern Manufacturing Inc.",
+  "organizationType": "Customer",
+  "parentOrganizationId": "CORP-001",
+  "isActive": true,
+  "isCashAccount": false,
+  "taxId": "12-3456789",
+  "currency": "USD",
+  "creditLimit": 50000.00,
+  "creditStatus": "APPROVED",
+  "paymentTermsCode": "NET30",
+  "priceLevel": "CONTRACT-A",
+  "salesRepId": "SR-100",
+  "defaultBranchId": "WH-10",
+  "primaryAddress": { },
+  "primaryContact": { },
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `organizationId` | string | Unique identifier |
+| `organizationName` | string | Display name |
+| `organizationType` | string | Role: `"Customer"`, `"Vendor"`, `"Supplier"`, `"Corporation"`. String by design. |
+| `parentOrganizationId` | string | Parent organization (for corporation hierarchy) |
+| `isActive` | boolean | Whether the organization is active |
+| `isCashAccount` | boolean | Whether this is a cash (non-credit) account |
+| `taxId` | string | Tax identification number |
+| `taxExemptNumber` | string | Tax exemption certificate number |
+| `taxExemptStatus` | string | Tax exemption status |
+| `currency` | string | Default currency code |
+| `creditLimit` | decimal | Credit limit |
+| `creditStatus` | string | Credit status |
+| `paymentTermsCode` | string | Default payment terms |
+| `priceLevel` | string | Price list or tier |
+| `dunsNumber` | string | D-U-N-S number |
+| `glnNumber` | string | Global Location Number |
+| `salesRepId` | string | Assigned sales representative |
+| `defaultBranchId` | string | Default branch/warehouse |
+| `primaryAddress` | [CoreAddress](#coreaddress) | Primary address |
+| `primaryContact` | [CoreContact](#corecontact) | Primary contact |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CoreAccountLocation
+
+Composite type: a Location viewed through an account's lens. Used for BillTo, ShipTo, SoldTo, ReturnTo, and EndCustomer composition on invoices, orders, and RMAs.
+
+```json
+{
+  "accountNumber": "C-827451",
+  "accountName": "Northern Manufacturing Inc.",
+  "accountType": "ShipTo",
+  "taxId": "12-3456789",
+  "paymentTerms": "NET30",
+  "location": {
+    "locationId": "4893",
+    "locationName": "Dallas Main Warehouse",
+    "locationType": "shipto",
+    "address": { }
+  },
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `accountNumber` | string | Account identifier |
+| `accountName` | string | Account display name |
+| `accountType` | string | Role: `"BillTo"`, `"ShipTo"`, `"SoldTo"`, `"ReturnTo"`, `"EndCustomer"`. String by design. |
+| `taxId` | string | Tax ID for this account |
+| `paymentTerms` | string | Payment terms |
+| `location` | [CoreLocation](#corelocation) | The physical location |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CoreInvoice
+
+Unified invoice header. Uses `CoreAccountLocation` for BillTo/ShipTo/SoldTo composition. Includes line items.
+
+```json
+{
+  "invoiceNumber": "INV-2026-00520",
+  "status": "POSTED",
+  "invoiceDate": "2026-03-15T00:00:00Z",
+  "dueDate": "2026-04-14T00:00:00Z",
+  "shipDate": "2026-03-14T00:00:00Z",
+  "currency": "USD",
+  "subTotal": 499.98,
+  "taxTotal": 41.24,
+  "freightTotal": 0.00,
+  "discountTotal": 0.00,
+  "totalAmount": 541.22,
+  "amountPaid": 0.00,
+  "amountDue": 541.22,
+  "poNumber": "PO-99001",
+  "orderNumber": "SO-2026-04200",
+  "paymentTerms": "NET30",
+  "customer": { },
+  "billTo": { },
+  "shipTo": { },
+  "soldTo": { },
+  "contact": { },
+  "salesRepId": "SR-100",
+  "items": [ ],
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `invoiceNumber` | string | Unique invoice number |
+| `externalId` | string | External system ID |
+| `linkKey` | string | Cross-system link key |
+| `status` | string | Invoice status (e.g., `"POSTED"`, `"OPEN"`, `"PAID"`) |
+| `invoiceDate` | datetime | Invoice date |
+| `dueDate` | datetime | Payment due date |
+| `shipDate` | datetime | Ship date |
+| `createdDate` | datetime | Record creation date |
+| `modifiedDate` | datetime | Last modified date |
+| `currency` | string | Currency code |
+| `subTotal` | decimal | Subtotal before tax/freight |
+| `taxTotal` | decimal | Total tax |
+| `freightTotal` | decimal | Total freight |
+| `discountTotal` | decimal | Total discounts |
+| `totalAmount` | decimal | Grand total |
+| `amountPaid` | decimal | Amount paid |
+| `amountDue` | decimal | Amount remaining |
+| `poNumber` | string | Customer PO number |
+| `orderNumber` | string | Related sales order number |
+| `endCustomerPONumber` | string | End customer PO |
+| `customer` | [CoreOrganization](#coreorganization) | Customer entity |
+| `billTo` | [CoreAccountLocation](#coreaccountlocation) | Bill-to address |
+| `shipTo` | [CoreAccountLocation](#coreaccountlocation) | Ship-to address |
+| `soldTo` | [CoreAccountLocation](#coreaccountlocation) | Sold-to address |
+| `contact` | [CoreContact](#corecontact) | Invoice contact |
+| `salesRepId` | string | Sales representative |
+| `paymentTerms` | string | Payment terms code |
+| `shipmentNumber` | string | Shipment reference |
+| `trackingNumber` | string | Carrier tracking number |
+| `items` | [CoreInvoiceLineItem[]](#coreinvoicelineitem) | Invoice line items |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CoreInvoiceLineItem
+
+Invoice line item. Includes shipment tracking via `CoreLineShipment` composition.
+
+```json
+{
+  "lineNumber": "1",
+  "partNo": "PROD-12345",
+  "description": "Heavy-Duty Industrial Motor 5HP",
+  "quantity": 2,
+  "unitOfMeasure": "EA",
+  "unitPrice": 249.99,
+  "extendedAmount": 499.98,
+  "manufacturerPartNo": "MFR-MOT-5HP",
+  "vendorPartNo": "V-5010-MOT5",
+  "upc": "012345678901",
+  "modelNumber": "MOT5HP-240V",
+  "shipTo": { },
+  "vendor": { },
+  "taxRate": 8.25,
+  "serialNumbers": ["SN-00998877", "SN-00998878"],
+  "shipments": [ ],
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `lineNumber` | string | Line position |
+| `partNo` | string | Product/part number |
+| `description` | string | Product description |
+| `quantity` | decimal | Quantity invoiced |
+| `unitOfMeasure` | string | Unit of measure |
+| `unitPrice` | decimal | Unit price |
+| `extendedAmount` | decimal | Line total |
+| `manufacturerPartNo` | string | Manufacturer's part number |
+| `upc` | string | Universal Product Code |
+| `vendorPartNo` | string | Vendor's part number |
+| `modelNumber` | string | Model number |
+| `shipTo` | [CoreAccountLocation](#coreaccountlocation) | Line-level ship-to (overrides header) |
+| `vendor` | [CoreOrganization](#coreorganization) | Vendor/supplier |
+| `taxRate` | decimal | Tax rate for this line |
+| `tariffCode` | string | Tariff/HS code |
+| `countryOfOrigin` | string | Country of origin |
+| `serialNumbers` | string[] | Serial numbers |
+| `shipments` | [CoreLineShipment[]](#corelineshipment) | Shipment tracking |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CoreOrder
+
+Unified sales order header. Collapses V1's fragmented sales order endpoints into a single entity.
+
+```json
+{
+  "orderNumber": "SO-2026-04200",
+  "status": "OPEN",
+  "orderType": "WARRANTY_REPLACEMENT",
+  "currency": "USD",
+  "orderDate": "2026-03-10T00:00:00Z",
+  "customerId": "C-827451",
+  "customerName": "Northern Manufacturing Inc.",
+  "customerPO": "PO-99001",
+  "billTo": { },
+  "shipTo": { },
+  "soldTo": { },
+  "subTotal": 249.99,
+  "taxTotal": 20.62,
+  "freightTotal": 0.00,
+  "totalAmount": 270.61,
+  "paymentTermsCode": "NET30",
+  "salesRepId": "SR-100",
+  "items": [ ],
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `orderNumber` | string | Order number |
+| `externalId` | string | External system ID |
+| `linkKey` | string | Cross-system link key |
+| `status` | string | Order status (e.g., `"OPEN"`, `"SHIPPED"`, `"CLOSED"`, `"CANCELLED"`) |
+| `statusDescription` | string | Status detail |
+| `orderType` | string | Order type classification |
+| `orderSource` | string | Source system/channel |
+| `currency` | string | Currency code |
+| `orderDate` | datetime | Order date |
+| `createdDate` | datetime | Record creation |
+| `modifiedDate` | datetime | Last modified |
+| `requestedShipDate` | datetime | Requested ship date |
+| `promisedShipDate` | datetime | Promised ship date |
+| `customerId` | string | Customer identifier |
+| `customerName` | string | Customer name |
+| `customerPO` | string | Customer PO reference |
+| `billTo` | [CoreAccountLocation](#coreaccountlocation) | Bill-to |
+| `shipTo` | [CoreAccountLocation](#coreaccountlocation) | Ship-to |
+| `soldTo` | [CoreAccountLocation](#coreaccountlocation) | Sold-to |
+| `subTotal` | decimal | Subtotal |
+| `taxTotal` | decimal | Tax |
+| `freightTotal` | decimal | Freight |
+| `totalAmount` | decimal | Grand total |
+| `freightTerms` | string | Freight terms |
+| `fobTerms` | string | FOB terms |
+| `priceList` | string | Price list |
+| `paymentTermsCode` | string | Payment terms |
+| `orderReturnReason` | string | Return reason (for return orders) |
+| `salesRepId` | string | Sales representative |
+| `items` | [CoreOrderItem[]](#coreorderitem) | Order line items |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CoreOrderItem
+
+Sales order line item. Includes shipment tracking and quantity allocation.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `lineNumber` | string | Line position |
+| `partNo` | string | Product/part number |
+| `description` | string | Product description |
+| `userItemDescription` | string | Customer-provided description |
+| `quantity` | decimal | Quantity ordered |
+| `unitOfMeasure` | string | Unit of measure |
+| `unitPrice` | decimal | Unit price |
+| `extendedAmount` | decimal | Line total |
+| `lineStatus` | string | Line status |
+| `manufacturerPartNo` | string | Manufacturer's part number |
+| `upc` | string | UPC |
+| `vendorPartNo` | string | Vendor's part number |
+| `modelNumber` | string | Model number |
+| `backorderQuantity` | decimal | Quantity backordered |
+| `allocatedQuantity` | decimal | Quantity allocated |
+| `shippedQuantity` | decimal | Quantity shipped |
+| `requestedShipDate` | datetime | Requested ship date |
+| `promisedShipDate` | datetime | Promised ship date |
+| `shipTo` | [CoreAccountLocation](#coreaccountlocation) | Line-level ship-to |
+| `subinventory` | string | Subinventory/warehouse |
+| `orderReturnReason` | string | Return reason |
+| `shipments` | [CoreLineShipment[]](#corelineshipment) | Shipment tracking |
+| `serialNumbers` | string[] | Serial numbers |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CoreRma
+
+Unified RMA header. Collapses V1's 17+ RMA endpoints into a single canonical model. Uses `CoreAccountLocation` for all address composition.
+
+```json
+{
+  "rmaNumber": "RMA-2026-00100",
+  "status": "OPEN",
+  "returnType": "WARRANTY",
+  "requestedRemedy": "CREDIT",
+  "currency": "USD",
+  "customerId": "C-827451",
+  "customerName": "Northern Manufacturing Inc.",
+  "billTo": { },
+  "shipTo": { },
+  "soldTo": { },
+  "returnTo": { },
+  "endCustomer": { },
+  "originalOrderNumber": "SO-2026-04100",
+  "replacementOrderNumber": "SO-2026-04200",
+  "submitterName": "Jane Smith",
+  "submitterEmail": "jane.smith@example.com",
+  "carrierCode": "UPS",
+  "creditAmount": 249.99,
+  "items": [ ],
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rmaNumber` | string | RMA number |
+| `externalId` | string | External system ID |
+| `linkKey` | string | Cross-system link key |
+| `status` | string | RMA status (e.g., `"DRAFT"`, `"OPEN"`, `"ACKNOWLEDGED"`, `"RECEIVED"`, `"CREDITED"`, `"CLOSED"`, `"CANCELLED"`) |
+| `createdDate` | datetime | Creation date |
+| `modifiedDate` | datetime | Last modified |
+| `receivedDate` | datetime | Date items were received |
+| `completedDate` | datetime | Date RMA was completed |
+| `canceledDate` | datetime | Date RMA was cancelled |
+| `returnType` | string | Return classification (e.g., `"WARRANTY"`, `"STOCK_RETURN"`, `"DAMAGED"`) |
+| `requestedRemedy` | string | Requested resolution (e.g., `"CREDIT"`, `"REPLACE"`, `"REPAIR"`) |
+| `currency` | string | Currency code |
+| `customerId` | string | Customer identifier |
+| `customerName` | string | Customer name |
+| `billTo` | [CoreAccountLocation](#coreaccountlocation) | Bill-to |
+| `shipTo` | [CoreAccountLocation](#coreaccountlocation) | Ship-to |
+| `soldTo` | [CoreAccountLocation](#coreaccountlocation) | Sold-to |
+| `returnTo` | [CoreAccountLocation](#coreaccountlocation) | Where items should be returned |
+| `endCustomer` | [CoreAccountLocation](#coreaccountlocation) | End customer (for warranty flow) |
+| `originalOrderNumber` | string | Original sales order |
+| `returnSalesOrderNumber` | string | Return sales order (if applicable) |
+| `replacementOrderNumber` | string | Warranty replacement order |
+| `submitterName` | string | Person submitting |
+| `submitterEmail` | string | Submitter email |
+| `submitterPhone` | string | Submitter phone |
+| `defaultShipToLocationId` | string | Default ship-to location |
+| `isInternational` | boolean | Whether this is an international return |
+| `carrierCode` | string | Carrier code |
+| `creditAmount` | decimal | Total credit amount |
+| `customerServiceRepId` | string | CSR handling this RMA |
+| `evaluationNotes` | string | Evaluation notes |
+| `items` | [CoreRmaReturnItem[]](#corermareturniitem) | RMA line items |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CoreRmaReturnItem
+
+RMA line item. Includes original invoice details, credit calculations, and shipment tracking.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `lineNumber` | string | Line position |
+| `partNo` | string | Product/part number |
+| `description` | string | Product description |
+| `quantity` | decimal | Return quantity |
+| `unitOfMeasure` | string | Unit of measure |
+| `unitPrice` | decimal | Unit price |
+| `lineStatus` | string | Line status |
+| `returnReasonCode` | string | Return reason code |
+| `assignedRemedy` | string | Assigned resolution |
+| `invoiceNumber` | string | Original invoice number |
+| `invoiceDate` | datetime | Original invoice date |
+| `invoiceQuantity` | decimal | Original quantity invoiced |
+| `originalPrice` | decimal | Original invoice price |
+| `creditPrice` | decimal | Credit price (may differ from original) |
+| `creditedQuantity` | decimal | Quantity credited so far |
+| `restockingFeePercent` | decimal | Restocking fee percentage |
+| `dispositionCode` | string | Disposition (e.g., `"RETURN_TO_STOCK"`, `"SCRAP"`, `"REPAIR"`) |
+| `conditionCode` | string | Item condition |
+| `manufacturerPartNo` | string | Manufacturer's part number |
+| `upc` | string | UPC |
+| `vendorPartNo` | string | Vendor's part number |
+| `modelNumber` | string | Model number |
+| `currency` | string | Line currency |
+| `lotNumber` | string | Lot number |
+| `dateCode` | string | Date code |
+| `countryOfOrigin` | string | Country of origin |
+| `ncnrFlag` | boolean | Non-cancellable/non-returnable flag |
+| `shipTo` | [CoreAccountLocation](#coreaccountlocation) | Line-level ship-to |
+| `billTo` | [CoreAccountLocation](#coreaccountlocation) | Line-level bill-to |
+| `shipments` | [CoreLineShipment[]](#corelineshipment) | Shipment tracking |
+| `serialNumbers` | string[] | Serial numbers |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CorePart
+
+Unified product/part entity. Consolidates product details, pricing, identifiers, and physical dimensions.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `partNo` | string | Primary part number |
+| `description` | string | Part description |
+| `quantity` | decimal | Quantity (context-dependent) |
+| `unitPrice` | decimal | Unit price |
+| `unitsOfMeasure` | [CoreUnitOfMeasure[]](#coreunitofmeasure) | Available units of measure with pack sizes |
+| `serialNumbers` | string[] | Serial numbers |
+| `isSellable` | boolean | Whether this part can be sold |
+| `isSerialized` | boolean | Whether this part is serialized |
+| `isDiscontinued` | boolean | Whether this part is discontinued |
+| `warehouseId` | string | Default warehouse |
+| `class3Id` | string | Classification level 3 |
+| `class4Id` | string | Classification level 4 |
+| `warrantyCode` | string | Default warranty code |
+| `nonReturnableReasons` | string[] | Reasons this part cannot be returned |
+| `manufacturerPartNo` | string | Manufacturer's part number |
+| `manufacturerName` | string | Manufacturer name |
+| `upc` | string | UPC |
+| `ncnrFlag` | boolean | Non-cancellable/non-returnable |
+| `modelNumber` | string | Model number |
+| `vendorPartNo` | string | Vendor's part number |
+| `vendorId` | string | Vendor identifier |
+| `productLine` | string | Product line |
+| `category` | string | Product category |
+| `subCategory` | string | Product subcategory |
+| `weight` | decimal | Weight |
+| `weightUOM` | string | Weight unit |
+| `length` | decimal | Length |
+| `width` | decimal | Width |
+| `height` | decimal | Height |
+| `dimensionUOM` | string | Dimension unit |
+| `minOrderQty` | decimal | Minimum order quantity |
+| `orderMultiple` | decimal | Order multiple |
+| `leadTimeDays` | integer | Lead time in days |
+| `countryOfOrigin` | string | Country of origin |
+| `htsCode` | string | Harmonized tariff code |
+| `hazmatCode` | string | Hazmat classification |
+| `isLotTracked` | boolean | Whether lot tracked |
+| `msrp` | decimal | MSRP |
+| `listPrice` | decimal | List price |
+| `cost` | decimal | Standard cost |
+| `imageUrl` | string | Primary image URL |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CoreLineShipment
+
+Shipment tracking at the line-item level. Captures carrier, tracking, dimensions, and cost details.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `shipmentNumber` | string | Shipment reference |
+| `trackingNumber` | string | Carrier tracking number |
+| `proNumber` | string | PRO number (LTL) |
+| `billOfLading` | string | Bill of lading number |
+| `shipDate` | datetime | Ship date |
+| `deliveryDate` | datetime | Actual delivery date |
+| `estimatedDeliveryDate` | datetime | Estimated delivery |
+| `shippedQuantity` | decimal | Quantity shipped |
+| `receivedQuantity` | decimal | Quantity received |
+| `carrierCode` | string | Carrier code |
+| `carrierName` | string | Carrier name |
+| `serviceLevel` | string | Service level (e.g., `"GROUND"`, `"2DAY"`) |
+| `containerNumber` | string | Container number |
+| `packageType` | string | Package type |
+| `packageCount` | integer | Number of packages |
+| `weight` | decimal | Shipment weight |
+| `weightUOM` | string | Weight unit |
+| `length` | decimal | Package length |
+| `width` | decimal | Package width |
+| `height` | decimal | Package height |
+| `dimensionUOM` | string | Dimension unit |
+| `freightCost` | decimal | Freight cost |
+| `freightTerms` | string | Freight terms |
+| `sealNumber` | string | Seal number |
+| `referenceNumber` | string | Reference number |
+| `extendedAttributes` | [DataAttribute[]](#dataattribute) | Custom attributes |
+
+---
+
+## CoreUnitOfMeasure
+
+Pairs a unit of measure with its pack size.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `unitOfMeasure` | string | Unit code (e.g., `"EA"`, `"CS"`, `"BX"`) |
+| `packSize` | string | Pack size (e.g., `"1"`, `"12"`, `"24"`) |
 
 ---
 
@@ -76,9 +682,11 @@ Standard pagination wrapper for list endpoints.
 {
   "pagination": {
     "page": 1,
-    "pageSize": 100,
-    "totalRecords": 45230,
-    "totalPages": 453
+    "pageSize": 50,
+    "totalResults": 1243,
+    "totalPages": 25,
+    "hasNextPage": true,
+    "hasPreviousPage": false
   }
 }
 ```
@@ -86,15 +694,15 @@ Standard pagination wrapper for list endpoints.
 | Field | Type | Description |
 |-------|------|-------------|
 | `page` | integer | Current page number |
-| `pageSize` | integer | Number of records per page |
-| `totalRecords` | integer | Total records matching the query |
-| `totalPages` | integer | Total number of pages |
+| `pageSize` | integer | Results on this page |
+| `totalResults` | integer | Total matching records |
+| `totalPages` | integer | Total pages |
+| `hasNextPage` | boolean | Whether another page follows |
+| `hasPreviousPage` | boolean | Whether a previous page exists |
 
 ---
 
 ## Error response
-
-All errors follow this structure. See [Error handling](/getting-started/error-handling) for full details and examples.
 
 ```json
 {

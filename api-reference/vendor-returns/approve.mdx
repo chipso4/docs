@@ -1,0 +1,37 @@
+---
+title: "Approve vendor return"
+description: "PATCH /v1/vendor-return/approve — Approve a vendor return for warehouse processing."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `PATCH /v1/vendor-return/approve`
+
+Approve a vendor return for warehouse processing. Moves status from DRAFT to APPROVED.
+
+### Request body
+
+```json
+{
+  "returnNumber": "VR-2026-00050"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `returnNumber` | string | **Yes** | The vendor return number |
+
+### Response `200 OK`
+
+```json
+{
+  "returnNumber": "VR-2026-00050",
+  "messages": ["Vendor return approved for processing."]
+}
+```
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 4

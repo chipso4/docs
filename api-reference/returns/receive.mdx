@@ -1,0 +1,60 @@
+---
+title: "Receive return items"
+description: "PATCH /v1/return/receive — Record physical receipt of returned items against an RMA."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `PATCH /v1/return/receive`
+
+Record the physical receipt of returned items against an RMA. Each line item specifies the quantity received, receiving location, and optional details like serial numbers and bin.
+
+### Request body
+
+```json
+{
+  "rmaNumber": "RMA-2026-00100",
+  "lineItems": [
+    {
+      "lineNo": "1",
+      "itemId": "PROD-12345",
+      "receiptLocationId": "WH-10",
+      "quantity": 1,
+      "returnType": "CREDIT",
+      "serialNumbers": ["SN-00998877"],
+      "returnBin": "BIN-RET-01",
+      "adjustmentReasonCode": "DEFECTIVE"
+    }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `rmaNumber` | string | **Yes** | The RMA number |
+| `lineItems` | array | **Yes** | Line items being received |
+| `lineItems[].lineNo` | string | **Yes** | Line number on the RMA |
+| `lineItems[].itemId` | string | **Yes** | Product identifier |
+| `lineItems[].receiptLocationId` | string | **Yes** | Warehouse where items are received |
+| `lineItems[].quantity` | decimal | **Yes** | Quantity received |
+| `lineItems[].returnType` | string | No | Return classification (`"CREDIT"`, `"REPLACE"`, `"SCRAP"`) |
+| `lineItems[].serialNumbers` | array | No | Serial numbers for serialized items |
+| `lineItems[].returnBin` | string | No | Specific bin for received items |
+| `lineItems[].adjustmentReasonCode` | string | No | Inventory adjustment reason |
+
+### Response `200 OK`
+
+```json
+{
+  "rmaNumber": "RMA-2026-00100",
+  "messages": ["Line 1 received successfully."]
+}
+```
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Step 5: record receipt
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 5: receive defective part (or record scrap)

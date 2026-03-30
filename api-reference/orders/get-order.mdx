@@ -1,0 +1,119 @@
+---
+title: "Get sales order"
+description: "GET /v1/sales-order — Retrieve a sales order as a CoreOrder entity."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/sales-order`
+
+Retrieve full details for a specific sales order. Returns a [`CoreOrder`](/data-types/core-objects#coreorder) entity with line items and account locations.
+
+### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `orderNumber` | string | **Yes** | The sales order number |
+
+### Response `200 OK`
+
+```json
+{
+  "orderNumber": "SO-2026-04200",
+  "status": "OPEN",
+  "orderType": "WARRANTY_REPLACEMENT",
+  "currency": "USD",
+  "orderDate": "2026-03-10T00:00:00Z",
+  "createdDate": "2026-03-10T15:00:00Z",
+  "customerId": "C-827451",
+  "customerName": "Northern Manufacturing Inc.",
+  "customerPO": "PO-99001",
+  "billTo": {
+    "accountNumber": "C-827451",
+    "accountName": "Northern Manufacturing Inc.",
+    "accountType": "BillTo",
+    "location": {
+      "locationId": "4894",
+      "locationName": "Corporate Billing",
+      "locationType": "billto",
+      "address": {
+        "address1": "500 Commerce St",
+        "city": "Dallas",
+        "stateCode": "TX",
+        "zip": "75201",
+        "countryCode": "US"
+      }
+    }
+  },
+  "shipTo": {
+    "accountNumber": "C-827451",
+    "accountName": "Northern Manufacturing Inc.",
+    "accountType": "ShipTo",
+    "location": {
+      "locationId": "4893",
+      "locationName": "Dallas Main Warehouse",
+      "locationType": "shipto",
+      "address": {
+        "address1": "1200 Industrial Blvd",
+        "address2": "Suite 300",
+        "city": "Dallas",
+        "stateCode": "TX",
+        "zip": "75207",
+        "countryCode": "US"
+      },
+      "primaryContact": {
+        "contactId": "CTX-9012",
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "contactType": "Shipping"
+      }
+    }
+  },
+  "subTotal": 249.99,
+  "taxTotal": 20.62,
+  "freightTotal": 0.00,
+  "totalAmount": 270.61,
+  "paymentTermsCode": "NET30",
+  "freightTerms": "PREPAID",
+  "salesRepId": "SR-100",
+  "items": [
+    {
+      "lineNumber": "1",
+      "partNo": "PROD-12345",
+      "description": "Heavy-Duty Industrial Motor 5HP",
+      "quantity": 1,
+      "unitOfMeasure": "EA",
+      "unitPrice": 249.99,
+      "extendedAmount": 249.99,
+      "lineStatus": "OPEN",
+      "manufacturerPartNo": "MFR-MOT-5HP",
+      "vendorPartNo": "V-5010-MOT5",
+      "backorderQuantity": 0,
+      "allocatedQuantity": 1,
+      "shippedQuantity": 0,
+      "subinventory": "WH-10",
+      "serialNumbers": ["SN-00998877"],
+      "shipments": [],
+      "extendedAttributes": []
+    }
+  ],
+  "extendedAttributes": []
+}
+```
+
+The response follows the [`CoreOrder`](/data-types/core-objects#coreorder) schema. Key nested types:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `billTo` | [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) | Bill-to account and address |
+| `shipTo` | [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) | Ship-to account and address |
+| `items` | [`CoreOrderItem[]`](/data-types/core-objects#coreorderitem) | Order line items with allocation and shipment tracking |
+
+See the [core objects reference](/data-types/core-objects) for full field listings.
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 2: verify replacement order details
+- [Replacement orders](/warranty-hub/replacement-orders) — Order retrieval

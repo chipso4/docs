@@ -1,0 +1,106 @@
+---
+title: "Returns Hub"
+sidebarTitle: "Introduction"
+description: "The foundation integration for non-defect product returns and the shared endpoints used by all hubs."
+---
+
+<Note>
+**Product tag:** `btuReturns` — This is the primary integration product. Every integration starts here.
+</Note>
+
+## What this hub does
+
+The Returns Hub handles **non-defect product returns** — the customer ordered the wrong item, received a damaged shipment, or has overstock they need to send back. It covers the full RMA lifecycle: create the return, acknowledge it, receive the physical items, and issue a credit.
+
+It also serves as the **shared foundation** consumed by the Warranty Hub. Customer lookup, contact management, invoice lookup, and product details are all Returns Hub endpoints reused across hubs. There is no throwaway work.
+
+## Two roles
+
+<Tabs>
+  <Tab title="Standalone returns">
+    The core use case. A distributor's customer reports a non-defect issue and needs to return product for credit.
+
+    **Typical reasons:** Wrong item shipped, overstock, damaged in transit, order cancellation.
+
+    [See the full return flow →](/returns-hub/return-flow)
+  </Tab>
+  <Tab title="Warranty credit issuance">
+    At the end of a warranty event (after the replacement part has been provided and the manufacturer claim approved), the Returns Hub finalizes the RMA and issues a credit that offsets the replacement sales order. Same endpoints, different trigger.
+
+    [See the full warranty flow →](/warranty-hub/warranty-flow)
+  </Tab>
+</Tabs>
+
+## Integration direction
+
+Continuum calls **your** API. You build the endpoints; Continuum calls them.
+
+```
+Continuum → Your ERP API → Your ERP (SAP, Oracle, Epicor, etc.)
+```
+
+Your middleware is a translation layer between Continuum's standard JSON contract and your internal systems. Any tech stack works — .NET, Java, Node.js, Python — as long as it serves an HTTPS REST API that conforms to the endpoint contracts.
+
+## Endpoints (flow order)
+
+**Auth & codes**
+
+| | Method | Endpoint | Purpose |
+|-|--------|----------|---------|
+| 1 | POST | [`/oauth2/token`](/getting-started/authentication) | Get access token |
+| 2 | GET | [`/codes/rma-reasons`](/api-reference/codes/rma-reasons) | Return reason codes |
+| 3 | GET | [`/codes/ship-vias`](/api-reference/codes/ship-vias) | Shipping methods |
+| 4 | GET | [`/codes/adjustment-reasons`](/api-reference/codes/adjustment-reasons) | Inventory adjustment reasons |
+
+**Customer context** *(shared with Warranty Hub)*
+
+| | Method | Endpoint | Returns |
+|-|--------|----------|---------|
+| 5 | GET | [`/organizations`](/api-reference/customers/list-customers) | [CoreOrganization[]](/data-types/core-objects#coreorganization) |
+| 6 | GET | [`/organization/{id}`](/api-reference/customers/customer-details) | [CoreOrganization](/data-types/core-objects#coreorganization) |
+| 7 | GET | [`/organization/{id}/contacts`](/api-reference/customers/contacts) | [CoreContact[]](/data-types/core-objects#corecontact) |
+| 8 | GET | [`/contact/{contactId}`](/api-reference/customers/contact-details) | [CoreContact](/data-types/core-objects#corecontact) |
+| 9 | GET | [`/organization/{id}/locations`](/api-reference/customers/locations) | [CoreLocation[]](/data-types/core-objects#corelocation) |
+
+**Products & invoices** *(shared with Warranty Hub)*
+
+| | Method | Endpoint | Returns |
+|-|--------|----------|---------|
+| 10 | GET | [`/part/{partId}`](/api-reference/products/product-details) | [CorePart](/data-types/core-objects#corepart) |
+| 11 | GET | [`/parts?checkAvailability=true`](/api-reference/products/availability) | [CorePart](/data-types/core-objects#corepart) + stock |
+| 12 | GET | [`/parts?CustomerId={id}`](/api-reference/products/pricing-customer) | [CorePart](/data-types/core-objects#corepart) + price |
+| 13 | GET | [`/invoices`](/api-reference/invoices/search-invoices) | [CoreInvoice[]](/data-types/core-objects#coreinvoice) |
+| 14 | GET | [`/invoice/{invoiceNumber}`](/api-reference/invoices/invoice-details) | [CoreInvoice](/data-types/core-objects#coreinvoice) + lines |
+
+**RMA lifecycle**
+
+| | Method | Endpoint | Purpose |
+|-|--------|----------|---------|
+| 15 | POST | [`/rma`](/api-reference/returns/create-return) | Create the RMA |
+| 16 | GET | [`/rma/{rmaNumber}`](/api-reference/returns/get-return) | Get RMA details |
+| 17 | PUT | [`/rma/{rmaNumber}`](/api-reference/returns/acknowledge) | Acknowledge (approve) |
+| 18 | PUT | [`/rma/{rmaNumber}`](/api-reference/returns/receive) | Receive returned items |
+| 19 | PUT | [`/rma/{rmaNumber}`](/api-reference/returns/credit-lines) | Issue credit |
+
+<Info>
+All endpoints use the V2 base: `/api/btu/v2/`. Steps 17–19 are all `PUT` on [`CoreRma`](/data-types/core-objects#corerma) — the action is determined by the fields being updated, not separate routes.
+</Info>
+
+[Full implementation checklist with tiered build order →](/returns-hub/implementation-checklist)
+
+## Quick links
+
+<CardGroup cols={2}>
+  <Card title="Return flow" icon="rotate-left" href="/returns-hub/return-flow">
+    Step-by-step walkthrough with sequence diagram.
+  </Card>
+  <Card title="API reference" icon="code" href="/api-reference/overview">
+    Endpoint specs with request/response examples.
+  </Card>
+  <Card title="Core data types" icon="cube" href="/data-types/core-objects">
+    CoreRma, CoreOrganization, CoreInvoice, and all V2 entities.
+  </Card>
+  <Card title="Warranty Hub" icon="shield-check" href="/warranty-hub/introduction">
+    Add replacement orders once Returns is live.
+  </Card>
+</CardGroup>

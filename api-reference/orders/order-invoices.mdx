@@ -1,0 +1,45 @@
+---
+title: "Order invoices"
+description: "GET /v1/sales-order/{orderNumber}/invoices — Get invoices linked to a sales order."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/sales-order/{orderNumber}/invoices`
+
+Retrieve invoice numbers associated with a sales order. Used to confirm fulfillment and obtain the invoice number needed for warranty claim submission.
+
+### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `orderNumber` | string | **Yes** | The sales order number |
+
+### Response `200 OK`
+
+```json
+{
+  "orderNumber": "SO-2026-04200",
+  "invoices": [
+    {
+      "invoiceNumber": "INV-2026-00520",
+      "invoiceDate": "2026-03-15T00:00:00Z",
+      "totalAmount": 270.61
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `orderNumber` | string | The sales order number |
+| `invoices` | array | Invoices linked to this order |
+| `invoices[].invoiceNumber` | string | Invoice number |
+| `invoices[].invoiceDate` | datetime | Invoice date |
+| `invoices[].totalAmount` | decimal | Invoice total |
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 2: get invoice number for claim submission

@@ -1,0 +1,61 @@
+---
+title: "Product availability"
+description: "GET /v1/products/availability — Check stock availability across locations."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/products/availability`
+
+Check stock availability for a product, optionally filtered to a specific warehouse location.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `ItemId` | string | **Yes** | The product/part identifier |
+| `LocationId` | string | No | Filter to a specific warehouse. If omitted, returns availability across all locations. |
+
+### Response `200 OK`
+
+```json
+{
+  "itemId": "PROD-12345",
+  "locations": [
+    {
+      "locationId": "WH-10",
+      "locationName": "Dallas Main Warehouse",
+      "quantityOnHand": 24,
+      "quantityAvailable": 18,
+      "quantityOnOrder": 50,
+      "unitOfMeasure": "EA"
+    },
+    {
+      "locationId": "WH-20",
+      "locationName": "Houston Branch",
+      "quantityOnHand": 6,
+      "quantityAvailable": 6,
+      "quantityOnOrder": 0,
+      "unitOfMeasure": "EA"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `itemId` | string | Product identifier |
+| `locations` | array | Availability by location |
+| `locations[].locationId` | string | Warehouse identifier |
+| `locations[].locationName` | string | Warehouse display name |
+| `locations[].quantityOnHand` | decimal | Total physical quantity |
+| `locations[].quantityAvailable` | decimal | Quantity available for sale (on hand minus allocated) |
+| `locations[].quantityOnOrder` | decimal | Quantity on incoming purchase orders |
+| `locations[].unitOfMeasure` | string | Unit of measure |
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 2: check if replacement part is in stock

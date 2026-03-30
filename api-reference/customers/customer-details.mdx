@@ -1,0 +1,84 @@
+---
+title: "Customer details"
+description: "GET /v1/customers/details — Retrieve a specific customer as a full CoreOrganization entity."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/customers/details`
+
+Retrieve full details for a specific customer. Returns a [`CoreOrganization`](/data-types/core-objects#coreorganization) entity with primary address, primary contact, and all fields.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `customerId` | string | **Yes** | The customer's unique identifier |
+
+### Response `200 OK`
+
+```json
+{
+  "organizationId": "C-827451",
+  "organizationName": "Northern Manufacturing Inc.",
+  "organizationType": "Customer",
+  "parentOrganizationId": "CORP-001",
+  "isActive": true,
+  "isCashAccount": false,
+  "taxId": "12-3456789",
+  "taxExemptNumber": "TX-EX-9876",
+  "taxExemptStatus": "EXEMPT",
+  "currency": "USD",
+  "creditLimit": 50000.00,
+  "creditStatus": "APPROVED",
+  "paymentTermsCode": "NET30",
+  "priceLevel": "CONTRACT-A",
+  "salesRepId": "SR-100",
+  "defaultBranchId": "WH-10",
+  "glnNumber": "0012345000015",
+  "primaryAddress": {
+    "address1": "1200 Industrial Blvd",
+    "address2": "Suite 300",
+    "city": "Dallas",
+    "state": "Texas",
+    "stateCode": "TX",
+    "zip": "75207",
+    "country": "United States",
+    "countryCode": "US"
+  },
+  "primaryContact": {
+    "contactId": "CTX-9012",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "title": "Warehouse Manager",
+    "email": "jane.smith@example.com",
+    "phone": "214-555-0101",
+    "mobile": "214-555-0102",
+    "contactType": "Shipping",
+    "isPrimary": true,
+    "isActive": true
+  },
+  "extendedAttributes": [
+    {
+      "name": "TaxExempt",
+      "value": "true",
+      "section": "Tax"
+    },
+    {
+      "name": "IndustryCode",
+      "value": "HVAC",
+      "section": "Classification"
+    }
+  ]
+}
+```
+
+The response follows the full [`CoreOrganization`](/data-types/core-objects#coreorganization) schema with nested [`CoreAddress`](/data-types/core-objects#coreaddress) and [`CoreContact`](/data-types/core-objects#corecontact). See the [core objects reference](/data-types/core-objects) for all fields.
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Step 1: identify the customer
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 2: replacement order context

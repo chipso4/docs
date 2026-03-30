@@ -1,0 +1,74 @@
+---
+title: "Implementation checklist"
+sidebarTitle: "Implementation checklist"
+description: "Tiered build order for the Warranty Hub — sales orders and vendor returns."
+---
+
+<Warning>
+**Prerequisite:** Tiers 1–3 are the shared foundation from the [Returns Hub](/returns-hub/implementation-checklist). If you've already built those, skip to Tier 4B.
+</Warning>
+
+All endpoints use the V2 base URL: `/api/btu/v2/`.
+
+## Tier 1–3: Shared foundation
+
+These are the same endpoints from the Returns Hub. If already implemented, skip ahead.
+
+| Tier | Endpoints | Count |
+|------|-----------|-------|
+| 1. Foundation | OAuth2, health, reference codes | 5 |
+| 2. Customer context | Organizations, contacts, locations | 7 |
+| 3. Products & invoices | Parts, pricing, invoices | 6 |
+
+[See full Returns checklist →](/returns-hub/implementation-checklist)
+
+---
+
+## Tier 4B: Sales orders (Warranty-specific)
+
+In V2, the sales order lifecycle uses the [`CoreOrder`](/data-types/core-objects#coreorder) entity. All modifications are `PUT` updates.
+
+<Accordion title="3 V2 endpoints + polling" defaultOpen>
+
+| Status | Method | V2 endpoint | API reference | Purpose |
+|--------|--------|-------------|---------------|---------|
+| ☐ | POST | `/api/btu/v2/order` | [Create order](/api-reference/orders/create-order) | Create replacement sales order |
+| ☐ | GET | `/api/btu/v2/order/{orderNumber}` | [Get order](/api-reference/orders/get-order) | Retrieve order details |
+| ☐ | PUT | `/api/btu/v2/order/{orderNumber}` | *(all modifications)* | Cancel, add lines, update pricing/quantity |
+| ☐ | GET | `/api/btu/v2/orders?OrderNumbers={id}` | [Order status](/api-reference/orders/order-status) | Batch status check (poll until invoiced) |
+| ☐ | GET | `/api/btu/v2/invoices?OrderNumber={id}` | [Order invoices](/api-reference/orders/order-invoices) | Get invoice numbers for an order |
+| ☐ | GET | `/api/btu/v2/codes/warranty-reasons` | [Warranty reasons](/api-reference/codes/warranty-reasons) | Warranty reason codes |
+
+</Accordion>
+
+## Tier 4C: Vendor returns (Warranty-specific)
+
+The vendor return workflow — triggered after claim approval.
+
+<Accordion title="6 endpoints">
+
+| Status | Method | V2 endpoint | API reference | Purpose |
+|--------|--------|-------------|---------------|---------|
+| ☐ | POST | `/api/btu/v2/vendor-return` | [Create](/api-reference/vendor-returns/create-vendor-return) | Create vendor return |
+| ☐ | GET | `/api/btu/v2/vendor-return/{id}` | [Get](/api-reference/vendor-returns/get-vendor-return) | Retrieve details |
+| ☐ | PATCH | `/api/btu/v2/vendor-return` | [Update](/api-reference/vendor-returns/update-vendor-return) | Update header fields |
+| ☐ | PATCH | `/api/btu/v2/vendor-return/approve` | [Approve](/api-reference/vendor-returns/approve) | Approve for processing |
+| ☐ | PATCH | `/api/btu/v2/vendor-return/picked` | [Picked](/api-reference/vendor-returns/picked) | Mark as picked |
+| ☐ | PATCH | `/api/btu/v2/vendor-return/ship` | [Ship](/api-reference/vendor-returns/ship) | Record shipment |
+
+</Accordion>
+
+## Tier 4D: RMA finalization (shared with Returns)
+
+These Returns Hub endpoints close the warranty loop. In V2, all three operations are `PUT` updates on [`CoreRma`](/data-types/core-objects#corerma).
+
+<Accordion title="V2: single PUT endpoint">
+
+| Status | Method | V2 endpoint | API reference | Purpose |
+|--------|--------|-------------|---------------|---------|
+| ☐ | POST | `/api/btu/v2/rma` | [Create return](/api-reference/returns/create-return) | Create RMA (DRAFT status) |
+| ☐ | PUT | `/api/btu/v2/rma/{rmaNumber}` | [Acknowledge](/api-reference/returns/acknowledge) | Finalize (DRAFT → FINAL) |
+| ☐ | PUT | `/api/btu/v2/rma/{rmaNumber}` | [Receive](/api-reference/returns/receive) | Receive defective part |
+| ☐ | PUT | `/api/btu/v2/rma/{rmaNumber}` | [Credit](/api-reference/returns/credit-lines) | Issue credit offsetting replacement order |
+
+</Accordion>

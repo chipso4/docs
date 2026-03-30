@@ -1,0 +1,48 @@
+---
+title: "Customer pricing"
+description: "GET /v1/products/pricing/customer — Retrieve customer-specific pricing for a product."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/products/pricing/customer`
+
+Retrieve customer-specific pricing for a product. The price may differ from list price based on the customer's contract, volume tier, or promotional pricing.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `ItemId` | string | **Yes** | The product/part identifier |
+| `CustomerId` | string | **Yes** | The customer identifier |
+
+### Response `200 OK`
+
+```json
+{
+  "itemId": "PROD-12345",
+  "customerId": "C-827451",
+  "unitPrice": 249.99,
+  "currency": "USD",
+  "priceList": "CONTRACT-A",
+  "unitOfMeasure": "EA",
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `itemId` | string | Product identifier |
+| `customerId` | string | Customer identifier |
+| `unitPrice` | decimal | Customer-specific unit price |
+| `currency` | string | Currency code |
+| `priceList` | string | Price list or contract that determined the price |
+| `unitOfMeasure` | string | Unit of measure |
+| `extendedAttributes` | array | Additional pricing attributes |
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 2: get price for replacement order

@@ -1,0 +1,53 @@
+---
+title: "Contact details"
+description: "GET /v1/customers/contacts/details — Full details for a specific contact."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/customers/contacts/details`
+
+<Note>
+**V2 equivalent:** `GET /api/btu/v2/contact/{contactId}` — returns a [`CoreContact`](/data-types/contacts) entity with full address and metadata.
+</Note>
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `customerId` | string | **Yes** | The customer's unique identifier |
+| `contactId` | string | **Yes** | The contact's unique identifier |
+
+### Response `200 OK`
+
+```json
+{
+  "contactId": "CTX-9012",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "title": "Warehouse Manager",
+  "email": "jane.smith@example.com",
+  "phone": "214-555-0101",
+  "mobile": "214-555-0102",
+  "fax": "214-555-0199",
+  "contactType": "Shipping",
+  "isPrimary": true,
+  "isActive": true,
+  "address": {
+    "address1": "1200 Industrial Blvd",
+    "address2": "Suite 300",
+    "city": "Dallas",
+    "state": "Texas",
+    "stateCode": "TX",
+    "zip": "75207",
+    "country": "United States",
+    "countryCode": "US"
+  },
+  "extendedAttributes": []
+}
+```
+
+The response follows the [`CoreContact`](/data-types/contacts) schema.

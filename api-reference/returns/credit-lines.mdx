@@ -1,0 +1,68 @@
+---
+title: "Credit return lines"
+description: "PATCH /v1/return/credit-lines — Issue credit for returned items."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `PATCH /v1/return/credit-lines`
+
+Issue credit for received return line items. Triggers credit memo creation in the ERP.
+
+<Tabs>
+  <Tab title="Standalone return">
+    Credits the customer for the returned items. Closes the return loop.
+  </Tab>
+  <Tab title="Warranty flow">
+    Issues a credit that **offsets the replacement sales order** from [Phase 2](/warranty-hub/warranty-flow#phase-2-replace-the-part). The customer's net cost is zero — they paid for the replacement up front and now receive a matching credit. This is the final step of the warranty event.
+  </Tab>
+</Tabs>
+
+### Request body
+
+```json
+{
+  "rmaNumber": "RMA-2026-00100",
+  "lineItems": [
+    {
+      "lineNo": "1",
+      "itemId": "PROD-12345",
+      "creditLocationId": "WH-10"
+    }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `rmaNumber` | string | **Yes** | The RMA number |
+| `lineItems` | array | **Yes** | Line items to credit |
+| `lineItems[].lineNo` | string | **Yes** | Line number on the RMA |
+| `lineItems[].itemId` | string | **Yes** | Product identifier |
+| `lineItems[].creditLocationId` | string | **Yes** | Warehouse location for the credit |
+
+### Response `200 OK`
+
+```json
+{
+  "rmaNumber": "RMA-2026-00100",
+  "messages": ["Credit issued for line 1."],
+  "receiptNumber": "RCT-2026-00050",
+  "creditMemoNumber": "CM-2026-00075"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rmaNumber` | string | The RMA number |
+| `messages` | array | Processing messages |
+| `receiptNumber` | string | Receipt document number from the ERP |
+| `creditMemoNumber` | string | Credit memo number from the ERP |
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Step 6: issue credit
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 5: credit offsets replacement order

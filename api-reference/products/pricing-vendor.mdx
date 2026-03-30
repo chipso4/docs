@@ -1,0 +1,43 @@
+---
+title: "Vendor pricing"
+description: "GET /v1/products/pricing/vendor — Retrieve vendor pricing for a product."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/products/pricing/vendor`
+
+Retrieve vendor (cost) pricing for a product. Used to determine the distributor's cost basis.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `ItemId` | string | **Yes** | The product/part identifier |
+| `VendorId` | string | **Yes** | The vendor identifier |
+| `LocationId` | string | No | Filter by warehouse location |
+
+### Response `200 OK`
+
+```json
+{
+  "itemId": "PROD-12345",
+  "vendorId": "V-5010",
+  "unitCost": 175.00,
+  "currency": "USD",
+  "unitOfMeasure": "EA",
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `itemId` | string | Product identifier |
+| `vendorId` | string | Vendor identifier |
+| `unitCost` | decimal | Vendor unit cost |
+| `currency` | string | Currency code |
+| `unitOfMeasure` | string | Unit of measure |
+| `extendedAttributes` | array | Additional pricing attributes |

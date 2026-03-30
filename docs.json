@@ -11,7 +11,7 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Overview",
         "groups": [
           {
             "group": "Introduction",
@@ -28,6 +28,48 @@
               "getting-started/implementation-guide",
               "getting-started/authentication",
               "getting-started/error-handling"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Returns Hub",
+        "groups": [
+          {
+            "group": "Returns Hub",
+            "pages": [
+              "returns-hub/introduction",
+              "returns-hub/return-flow",
+              "returns-hub/implementation-checklist"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Warranty Hub",
+        "groups": [
+          {
+            "group": "Warranty Hub",
+            "pages": [
+              "warranty-hub/introduction",
+              "warranty-hub/warranty-flow",
+              "warranty-hub/replacement-orders",
+              "warranty-hub/vendor-returns",
+              "warranty-hub/implementation-checklist"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Warranty Claims Hub",
+        "groups": [
+          {
+            "group": "Warranty Claims Hub",
+            "pages": [
+              "warranty-claims-hub/introduction",
+              "warranty-claims-hub/claim-flow",
+              "warranty-claims-hub/status-lifecycle",
+              "warranty-claims-hub/implementation-checklist"
             ]
           },
           {
@@ -52,7 +94,76 @@
             ]
           },
           {
-            "group": "Unit & product data",
+            "group": "Reference codes",
+            "pages": [
+              "api-reference/codes/rma-reasons",
+              "api-reference/codes/ship-vias",
+              "api-reference/codes/adjustment-reasons",
+              "api-reference/codes/warranty-reasons"
+            ]
+          },
+          {
+            "group": "Customers & contacts",
+            "pages": [
+              "api-reference/customers/list-customers",
+              "api-reference/customers/customer-details",
+              "api-reference/customers/contacts",
+              "api-reference/customers/contact-details",
+              "api-reference/customers/contact-by-email",
+              "api-reference/customers/create-contact",
+              "api-reference/customers/locations"
+            ]
+          },
+          {
+            "group": "Products",
+            "pages": [
+              "api-reference/products/product-details",
+              "api-reference/products/availability",
+              "api-reference/products/pricing-customer",
+              "api-reference/products/pricing-vendor",
+              "api-reference/products/cross-reference"
+            ]
+          },
+          {
+            "group": "Invoices",
+            "pages": [
+              "api-reference/invoices/search-invoices",
+              "api-reference/invoices/invoice-details",
+              "api-reference/invoices/invoice-lines"
+            ]
+          },
+          {
+            "group": "Returns (RMA)",
+            "pages": [
+              "api-reference/returns/create-return",
+              "api-reference/returns/get-return",
+              "api-reference/returns/acknowledge",
+              "api-reference/returns/receive",
+              "api-reference/returns/credit-lines"
+            ]
+          },
+          {
+            "group": "Sales orders",
+            "pages": [
+              "api-reference/orders/create-order",
+              "api-reference/orders/get-order",
+              "api-reference/orders/order-status",
+              "api-reference/orders/order-invoices"
+            ]
+          },
+          {
+            "group": "Vendor returns",
+            "pages": [
+              "api-reference/vendor-returns/create-vendor-return",
+              "api-reference/vendor-returns/get-vendor-return",
+              "api-reference/vendor-returns/update-vendor-return",
+              "api-reference/vendor-returns/approve",
+              "api-reference/vendor-returns/picked",
+              "api-reference/vendor-returns/ship"
+            ]
+          },
+          {
+            "group": "Unit & product data (Claims)",
             "pages": [
               "api-reference/unit-data/validate-unit",
               "api-reference/unit-data/get-unit",
@@ -63,7 +174,7 @@
             ]
           },
           {
-            "group": "Parts & BOM",
+            "group": "Parts & BOM (Claims)",
             "pages": [
               "api-reference/parts/bill-of-materials",
               "api-reference/parts/cross-reference",
@@ -80,13 +191,14 @@
             ]
           },
           {
-            "group": "Reference data",
+            "group": "Reference data (Claims)",
             "pages": [
               "api-reference/reference-data/contractors",
               "api-reference/reference-data/locations",
               "api-reference/reference-data/corporations",
               "api-reference/reference-data/corporation-details",
               "api-reference/reference-data/corporation-customers",
+              "api-reference/reference-data/install-types",
               "api-reference/reference-data/labor-rates"
             ]
           },

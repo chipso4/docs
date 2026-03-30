@@ -1,0 +1,100 @@
+---
+title: "Implementation checklist"
+sidebarTitle: "Implementation checklist"
+description: "Tiered build order for the Warranty Claims Hub — what to implement on the OEM/manufacturer side."
+---
+
+<Note>
+This checklist is for **manufacturers** building the middleware API that Continuum calls. The Claims Hub is independent of the Returns and Warranty hubs — it connects to the OEM's systems, not the distributor's ERP.
+</Note>
+
+All endpoints use the V2 base URL: `/api/btu/v2/`.
+
+## Tier 1: Foundation
+
+Implement first. Everything else depends on these.
+
+<Accordion title="2 endpoints" defaultOpen>
+
+| Status | Method | V2 endpoint | API reference |
+|--------|--------|-------------|---------------|
+| ☐ | POST | `/api/btu/v2/oauth2/token` | [Authentication](/getting-started/authentication) |
+| ☐ | GET | `/api/btu/v2/health` | Health check |
+
+</Accordion>
+
+## Tier 2: Unit validation & claim types
+
+Serial validation and claim type lookup. These power Phase 1 of the warranty flow.
+
+<Accordion title="2 endpoints" defaultOpen>
+
+| Status | Method | V2 endpoint | API reference | Notes |
+|--------|--------|-------------|---------------|-------|
+| ☐ | GET | `/api/btu/v2/validate-unit` | [Validate unit](/api-reference/unit-data/validate-unit) | Only brands with serial lookup |
+| ☐ | GET | `/api/btu/v2/claim-types` | *(Claims Hub)* | Available claim types for a serial/model |
+
+</Accordion>
+
+## Tier 3: Parts & reason codes
+
+BOM lookup, replacement parts, and failure classification codes.
+
+<Accordion title="3 endpoints" defaultOpen>
+
+| Status | Method | V2 endpoint | API reference |
+|--------|--------|-------------|---------------|
+| ☐ | GET | `/api/btu/v2/bill-of-materials` | [Bill of materials](/api-reference/parts/bill-of-materials) |
+| ☐ | GET | `/api/btu/v2/products/replacements` | [Replacement parts](/api-reference/parts/replacements) |
+| ☐ | GET | `/api/btu/v2/products/reason-codes` | [Warranty codes](/api-reference/parts/warranty-codes) |
+
+</Accordion>
+
+## Tier 4: Claim lifecycle
+
+The core claim CRUD operations. These power Phase 3 of the warranty flow.
+
+<Accordion title="6 endpoints" defaultOpen>
+
+| Status | Method | V2 endpoint | Purpose |
+|--------|--------|-------------|---------|
+| ☐ | POST | `/api/btu/v2/claim/validate` | Pre-validate a claim (dry run) |
+| ☐ | POST | `/api/btu/v2/claim` | Submit a new warranty claim |
+| ☐ | GET | `/api/btu/v2/claim/status` | Check claim status |
+| ☐ | PATCH | `/api/btu/v2/claim` | Update a claim (corrections) |
+| ☐ | DELETE | `/api/btu/v2/claim` | Delete/cancel a claim |
+| ☐ | POST | `/api/btu/v2/claim/upload-attachment` | Upload supporting documents |
+
+</Accordion>
+
+## Tier 5: Supporting
+
+Reference data and optional endpoints.
+
+<Accordion title="5 endpoints">
+
+| Status | Method | V2 endpoint | API reference | Notes |
+|--------|--------|-------------|---------------|-------|
+| ☐ | GET | `/api/btu/v2/entitlement-information` | [Entitlement](/api-reference/unit-data/entitlement-information) | Available for brands that expose it; not standard flow |
+| ☐ | GET | `/api/btu/v2/locations` | [Locations](/api-reference/reference-data/locations) | Warranty service locations |
+| ☐ | GET | `/api/btu/v2/corporations` | [Corporations](/api-reference/reference-data/corporations) | Corporation hierarchy |
+| ☐ | GET | `/api/btu/v2/corporations/details` | [Corp details](/api-reference/reference-data/corporation-details) | Corporation details |
+| ☐ | GET | `/api/btu/v2/corporations/customers` | [Corp customers](/api-reference/reference-data/corporation-customers) | Customers under a corporation |
+
+</Accordion>
+
+---
+
+## Total endpoint count
+
+| Tier | Endpoints | Cumulative |
+|------|-----------|------------|
+| 1. Foundation | 2 | 2 |
+| 2. Unit validation | 2 | 4 |
+| 3. Parts & codes | 3 | 7 |
+| 4. Claim lifecycle | 6 | 13 |
+| 5. Supporting | 5 | 18 |
+
+<Tip>
+Tiers 1–4 (13 endpoints) cover the complete claim flow. Tier 5 adds reference data that enhances the experience but isn't required for core claim processing.
+</Tip>

@@ -1,0 +1,64 @@
+---
+title: "Customer contacts"
+description: "GET /v1/customers/contacts — Retrieve contacts for a customer."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/customers/contacts`
+
+Retrieve all contacts for a specific customer.
+
+<Note>
+**V2 equivalent:** `GET /api/btu/v2/organization/{organizationId}/contacts` — returns [`CoreContact`](/data-types/contacts) entities.
+</Note>
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `customerId` | string | **Yes** | The customer's unique identifier |
+
+### Response `200 OK`
+
+```json
+{
+  "contacts": [
+    {
+      "contactId": "CTX-9012",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "emailAddress": "jane.smith@example.com"
+    },
+    {
+      "contactId": "CTX-9013",
+      "firstName": "Bob",
+      "lastName": "Johnson",
+      "emailAddress": "bob.johnson@example.com"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `contacts` | array | List of contact objects |
+| `contacts[].contactId` | string | Unique identifier for the contact |
+| `contacts[].firstName` | string | First name |
+| `contacts[].lastName` | string | Last name |
+| `contacts[].emailAddress` | string | Email address |
+
+### Related endpoints
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | [`/v1/customers/contacts/details`](/api-reference/customers/contact-details) | Full details for a specific contact |
+| GET | [`/v1/customers/contacts/by-email`](/api-reference/customers/contact-by-email) | Look up a contact by email |
+| POST | [`/v1/customers/contacts`](/api-reference/customers/create-contact) | Create a new contact |
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Customer context

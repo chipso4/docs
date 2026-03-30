@@ -1,0 +1,44 @@
+---
+title: "Ship vendor return"
+description: "PATCH /v1/vendor-return/ship — Record shipment of a vendor return to the OEM."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `PATCH /v1/vendor-return/ship`
+
+Record that a vendor return has been shipped back to the manufacturer. Includes tracking information.
+
+### Request body
+
+```json
+{
+  "returnNumber": "VR-2026-00050",
+  "trackingNumber": "1Z999AA10123456784",
+  "carrierCode": "UPS",
+  "shipDate": "2026-03-18T00:00:00Z"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `returnNumber` | string | **Yes** | The vendor return number |
+| `trackingNumber` | string | No | Carrier tracking number |
+| `carrierCode` | string | No | Carrier code (e.g., `"UPS"`, `"FEDEX"`) |
+| `shipDate` | datetime | No | Date of shipment |
+
+### Response `200 OK`
+
+```json
+{
+  "returnNumber": "VR-2026-00050",
+  "messages": ["Vendor return shipped. Tracking: 1Z999AA10123456784"]
+}
+```
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 4: ship defective part to vendor
+- [Vendor returns](/warranty-hub/vendor-returns) — Shipped status

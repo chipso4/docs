@@ -1,0 +1,76 @@
+---
+title: "Order status (batch)"
+description: "POST /v1/orders/status — Check the status and invoice state of multiple orders."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `POST /v1/orders/status`
+
+Check the status of one or more sales orders in a single batch request. Returns the current disposition and invoice status for each line item. Continuum polls this endpoint until the replacement order is invoiced — the invoice is required before a warranty claim can be submitted.
+
+### Request body
+
+```json
+{
+  "orderNumbers": ["SO-2026-04200", "SO-2026-04201"]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `orderNumbers` | array of strings | **Yes** | Order numbers to check |
+
+### Response `200 OK`
+
+```json
+{
+  "orders": [
+    {
+      "orderNumber": "SO-2026-04200",
+      "orderStatus": "CLOSED",
+      "lineItems": [
+        {
+          "lineNumber": "1",
+          "itemId": "PROD-12345",
+          "quantityOrdered": 1,
+          "quantityInvoiced": 1,
+          "isInvoiced": true,
+          "invoiceNumber": "INV-2026-00520",
+          "invoiceLineNumber": "1",
+          "invoiceDate": "2026-03-15T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "orderNumber": "SO-2026-04201",
+      "orderStatus": "OPEN",
+      "lineItems": [
+        {
+          "lineNumber": "1",
+          "itemId": "PROD-67890",
+          "quantityOrdered": 4,
+          "quantityInvoiced": 0,
+          "isInvoiced": false,
+          "invoiceNumber": null,
+          "invoiceLineNumber": null,
+          "invoiceDate": null
+        }
+      ]
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `orders[].orderNumber` | string | Sales order number |
+| `orders[].orderStatus` | string | Current status (`"OPEN"`, `"SHIPPED"`, `"CLOSED"`) |
+| `orders[].lineItems[].isInvoiced` | boolean | Whether this line has been invoiced |
+| `orders[].lineItems[].invoiceNumber` | string \| null | Invoice number (if invoiced) |
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 2: poll until invoiced (gate for Phase 3)

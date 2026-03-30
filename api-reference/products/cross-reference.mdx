@@ -1,0 +1,54 @@
+---
+title: "Cross-reference"
+description: "GET /v1/products/cross-reference — Look up alternate item numbers and supersession chains."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/products/cross-reference`
+
+Retrieve cross-reference and alternate item numbers for a product. Handles superseded parts, brand equivalents, and customer/supplier-specific part numbers.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `productCode` | string | **Yes** | The product/part number to look up |
+| `customerId` | string | No | Filter by customer-specific cross-references |
+| `supplierId` | string | No | Filter by supplier-specific cross-references |
+
+### Response `200 OK`
+
+```json
+{
+  "productCode": "PROD-12345",
+  "crossReferences": [
+    {
+      "referenceType": "SUPERSEDED",
+      "referenceCode": "PROD-12340",
+      "description": "Previous generation motor (superseded 2025-06)"
+    },
+    {
+      "referenceType": "MANUFACTURER",
+      "referenceCode": "MFR-MOT-5HP",
+      "description": "Manufacturer part number"
+    },
+    {
+      "referenceType": "CUSTOMER",
+      "referenceCode": "CUST-M5HP-A",
+      "description": "Customer-specific part number for C-827451"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `productCode` | string | The queried product code |
+| `crossReferences` | array | List of cross-reference entries |
+| `crossReferences[].referenceType` | string | Type of reference (`"SUPERSEDED"`, `"MANUFACTURER"`, `"CUSTOMER"`, `"SUPPLIER"`, `"UPC"`) |
+| `crossReferences[].referenceCode` | string | The alternate identifier |
+| `crossReferences[].description` | string | Human-readable description |

@@ -1,0 +1,91 @@
+---
+title: "Warranty Claims Hub"
+sidebarTitle: "Introduction"
+description: "OEM-facing warranty claim processing — serial validation, BOM lookups, and claim submission to the manufacturer."
+---
+
+<Note>
+**Product tag:** `btuWarrantyVendor` — This hub connects to the OEM/manufacturer's warranty system, not the distributor's ERP.
+</Note>
+
+## What this hub does
+
+The Warranty Claims Hub is the manufacturer-facing side of the warranty process. Unlike the Returns and Warranty hubs (which talk to a distributor's ERP), this hub connects directly to the **OEM or manufacturer's warranty system** (e.g., Rheem/Ruud, Daikin).
+
+It participates in two phases of the broader [warranty event](/warranty-hub/warranty-flow): Phase 1 (identify the defect) and Phase 3 (file the claim). It can also operate standalone for manufacturers who only need claim processing.
+
+## Integration direction
+
+This is a **reverse integration** — the manufacturer builds the middleware API, and Continuum calls it.
+
+```
+Continuum → Manufacturer middleware → ERP / Warranty DB / PIM
+```
+
+## Endpoints (flow order)
+
+**Phase 1 — Identify the defect** *(before replacement order)*
+
+| | Method | Endpoint | Purpose | Notes |
+|-|--------|----------|---------|-------|
+| 1 | GET | [`/validate-unit`](/api-reference/unit-data/validate-unit) | Validate serial, get model | *Only if brand supports serial lookup* |
+| 2 | GET | [`/bill-of-materials`](/api-reference/parts/bill-of-materials) | Parts list for the unit | Customer selects failed part |
+| 3 | GET | [`/claim-types`](/warranty-claims-hub/implementation-checklist) | Available claim types | Per serial/model |
+| 4 | GET | [`/products/replacements`](/api-reference/parts/replacements) | Replacement part options | Handles superseded parts |
+| 5 | GET | [`/products/reason-codes`](/api-reference/parts/warranty-codes) | Failure reason codes | Part-specific |
+
+*→ Flow moves to [Phase 2 (Warranty Hub)](/warranty-hub/warranty-flow#phase-2-replace-the-part) for the replacement order.*
+
+**Phase 3 — File the warranty claim** *(after replacement order invoiced)*
+
+| | Method | Endpoint | Purpose |
+|-|--------|----------|---------|
+| 6 | POST | `/claim/validate` | Pre-validate claim (dry run) |
+| 7 | POST | `/claim` | Submit the warranty claim |
+| 8 | POST | `/claim/upload-attachment` | Upload photos / documents |
+| 9 | GET | `/claim/status` | Poll for manufacturer decision |
+| 10 | PATCH | `/claim` | Update claim (if corrections needed) |
+| 11 | DELETE | `/claim` | Cancel a claim |
+
+*→ Flow moves to [Phase 4 (Warranty Hub)](/warranty-hub/warranty-flow#phase-4-handle-the-defective-part) for vendor return, then [Phase 5 (Returns Hub)](/warranty-hub/warranty-flow#phase-5-credit-the-customer) for credit.*
+
+**Reference data**
+
+| | Method | Endpoint | Purpose |
+|-|--------|----------|---------|
+| 12 | GET | [`/locations`](/api-reference/reference-data/locations) | Warranty service locations |
+| 13 | GET | [`/corporations`](/api-reference/reference-data/corporations) | Authorized distributors |
+| 14 | GET | [`/corporations/details`](/api-reference/reference-data/corporation-details) | Distributor details |
+| 15 | GET | [`/corporations/customers`](/api-reference/reference-data/corporation-customers) | Customers under a distributor |
+| 16 | GET | [`/contractors`](/api-reference/reference-data/contractors) | Contractor directory |
+| 17 | GET | [`/labor-rates`](/api-reference/reference-data/labor-rates) | Labor/travel rate schedule |
+
+**System**
+
+| | Method | Endpoint | Purpose |
+|-|--------|----------|---------|
+| 18 | POST | [`/oauth2/token`](/getting-started/authentication) | Get access token |
+| 19 | GET | `/health` | Health check |
+
+<Info>
+All endpoints use the V2 base: `/api/btu/v2/`. Claim lifecycle endpoints (6–11) are documented in the [Claim flow](/warranty-claims-hub/claim-flow) and [Status lifecycle](/warranty-claims-hub/status-lifecycle) pages.
+</Info>
+
+[Full implementation checklist with tiered build order →](/warranty-claims-hub/implementation-checklist)
+
+## Quick links
+
+<CardGroup cols={2}>
+  <Card title="Claim flow" icon="diagram-project" href="/warranty-claims-hub/claim-flow">
+    The claim lifecycle with sequence diagrams.
+  </Card>
+  <Card title="Status lifecycle" icon="spinner" href="/warranty-claims-hub/status-lifecycle">
+    All claim statuses and transitions.
+  </Card>
+  <Card title="Process flows" icon="arrows-turn-to-dots" href="/process-flows/claims-processing">
+    Detailed process flows from the manufacturer's perspective.
+  </Card>
+  <Card title="Implementation checklist" icon="list-check" href="/warranty-claims-hub/implementation-checklist">
+    Tiered build order for Claims endpoints.
+  </Card>
+</CardGroup>

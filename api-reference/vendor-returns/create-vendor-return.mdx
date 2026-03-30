@@ -1,0 +1,72 @@
+---
+title: "Create vendor return"
+description: "POST /v1/vendor-return — Create a new vendor return to send defective items back to the OEM."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `POST /v1/vendor-return`
+
+Create a new vendor return order in the ERP. Used after a warranty claim is approved to send the defective part back to the manufacturer. References vendor and customer as [`CoreOrganization`](/data-types/core-objects#coreorganization) entities.
+
+### Request body
+
+```json
+{
+  "vendor": {
+    "organizationId": "V-5010",
+    "organizationName": "Acme Motor Supply",
+    "organizationType": "Vendor"
+  },
+  "customer": {
+    "organizationId": "C-827451",
+    "organizationName": "Northern Manufacturing Inc.",
+    "organizationType": "Customer"
+  },
+  "warehouseId": "WH-10",
+  "returnReason": "PREMATURE_FAILURE",
+  "notes": "Warranty claim CL-2026-0088",
+  "items": [
+    {
+      "lineNumber": "1",
+      "partNo": "PROD-12345",
+      "description": "Heavy-Duty Industrial Motor 5HP",
+      "quantity": 1,
+      "unitOfMeasure": "EA",
+      "unitPrice": 249.99,
+      "manufacturerPartNo": "MFR-MOT-5HP",
+      "reasonCode": "PREMATURE_FAILURE",
+      "serialNumbers": ["SN-00112233"]
+    }
+  ],
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `vendor` | [CoreOrganization](/data-types/core-objects#coreorganization) | **Yes** | Vendor/OEM (at minimum `organizationId`) |
+| `customer` | [CoreOrganization](/data-types/core-objects#coreorganization) | **Yes** | Customer whose warranty triggered this return |
+| `warehouseId` | string | **Yes** | Warehouse where defective items are held |
+| `returnReason` | string | **Yes** | Warranty reason code |
+| `notes` | string | No | Free-text notes (typically includes claim number) |
+| `items` | array | **Yes** | Items to return |
+| `items[].lineNumber` | string | **Yes** | Line number |
+| `items[].partNo` | string | **Yes** | Product/part number |
+| `items[].quantity` | decimal | **Yes** | Return quantity |
+| `items[].unitPrice` | decimal | **Yes** | Unit cost |
+| `items[].unitOfMeasure` | string | **Yes** | Unit of measure |
+| `items[].manufacturerPartNo` | string | No | Manufacturer's part number |
+| `items[].reasonCode` | string | No | Line-level reason |
+| `items[].serialNumbers` | string[] | No | Serial numbers |
+
+### Response `201 Created`
+
+Returns the full vendor return entity. See [GET /v1/vendor-return](/api-reference/vendor-returns/get-vendor-return) for the response shape.
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 4: return defective part to vendor
+- [Vendor returns](/warranty-hub/vendor-returns) — Creation

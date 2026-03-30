@@ -1,0 +1,70 @@
+---
+title: "Product details"
+description: "GET /v1/products/details — Retrieve a product as a CorePart entity."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/products/details`
+
+Retrieve detailed information for a specific product by item ID. Returns a [`CorePart`](/data-types/core-objects#corepart) entity.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `ItemId` | string | **Yes** | The product/part identifier |
+
+### Response `200 OK`
+
+```json
+{
+  "partNo": "PROD-12345",
+  "description": "Heavy-Duty Industrial Motor 5HP",
+  "manufacturerPartNo": "MFR-MOT-5HP",
+  "manufacturerName": "Acme Motor Supply",
+  "vendorPartNo": "V-5010-MOT5",
+  "vendorId": "V-5010",
+  "upc": "012345678901",
+  "modelNumber": "MOT5HP-240V",
+  "productLine": "Industrial Motors",
+  "category": "Motors",
+  "subCategory": "AC Motors",
+  "isSellable": true,
+  "isSerialized": true,
+  "isDiscontinued": false,
+  "ncnrFlag": false,
+  "unitsOfMeasure": [
+    { "unitOfMeasure": "EA", "packSize": "1" }
+  ],
+  "weight": 45.5,
+  "weightUOM": "LB",
+  "length": 18.0,
+  "width": 12.0,
+  "height": 14.0,
+  "dimensionUOM": "IN",
+  "minOrderQty": 1,
+  "orderMultiple": 1,
+  "leadTimeDays": 3,
+  "countryOfOrigin": "US",
+  "listPrice": 299.99,
+  "cost": 175.00,
+  "imageUrl": "https://parts.example.com/images/PROD-12345.jpg",
+  "warehouseId": "WH-10",
+  "extendedAttributes": [
+    { "name": "Voltage", "value": "240", "section": "Electrical" },
+    { "name": "Phase", "value": "Single", "section": "Electrical" },
+    { "name": "Horsepower", "value": "5", "section": "Performance" },
+    { "name": "RPM", "value": "1750", "section": "Performance" }
+  ]
+}
+```
+
+The response follows the [`CorePart`](/data-types/core-objects#corepart) schema. See the [core objects reference](/data-types/core-objects#corepart) for the full field listing.
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 2: verify replacement product

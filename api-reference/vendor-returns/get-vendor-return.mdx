@@ -1,0 +1,71 @@
+---
+title: "Get vendor return"
+description: "GET /v1/vendor-return — Retrieve details for a specific vendor return."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/vendor-return`
+
+Retrieve details for a specific vendor return by return number. The response uses [`CoreOrganization`](/data-types/core-objects#coreorganization) for vendor and customer references.
+
+### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `returnNumber` | string | **Yes** | The vendor return number |
+
+### Response `200 OK`
+
+```json
+{
+  "returnNumber": "VR-2026-00050",
+  "status": "APPROVED",
+  "returnDate": "2026-03-12T00:00:00Z",
+  "returnReason": "PREMATURE_FAILURE",
+  "notes": "Warranty claim CL-2026-0088",
+  "trackingNumber": "",
+  "carrierCode": "",
+  "warehouseId": "WH-10",
+  "vendor": {
+    "organizationId": "V-5010",
+    "organizationName": "Acme Motor Supply",
+    "organizationType": "Vendor"
+  },
+  "customer": {
+    "organizationId": "C-827451",
+    "organizationName": "Northern Manufacturing Inc.",
+    "organizationType": "Customer"
+  },
+  "items": [
+    {
+      "lineNumber": "1",
+      "partNo": "PROD-12345",
+      "description": "Heavy-Duty Industrial Motor 5HP",
+      "quantity": 1,
+      "unitOfMeasure": "EA",
+      "unitPrice": 249.99,
+      "manufacturerPartNo": "MFR-MOT-5HP",
+      "reasonCode": "PREMATURE_FAILURE",
+      "serialNumbers": ["SN-00112233"],
+      "extendedAttributes": []
+    }
+  ],
+  "extendedAttributes": []
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `returnNumber` | string | Vendor return number |
+| `status` | string | Current status (`"DRAFT"`, `"APPROVED"`, `"PICKED"`, `"SHIPPED"`, `"RECEIVED"`, `"CLOSED"`, `"CANCELLED"`) |
+| `vendor` | [`CoreOrganization`](/data-types/core-objects#coreorganization) | Vendor entity |
+| `customer` | [`CoreOrganization`](/data-types/core-objects#coreorganization) | Customer whose warranty triggered this return |
+| `items` | array | Line items being returned to vendor |
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 4: check vendor return status
+- [Vendor returns](/warranty-hub/vendor-returns) — Status tracking

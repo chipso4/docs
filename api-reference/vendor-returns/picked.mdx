@@ -1,0 +1,38 @@
+---
+title: "Mark vendor return picked"
+description: "PATCH /v1/vendor-return/picked — Record that items have been picked for a vendor return."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `PATCH /v1/vendor-return/picked`
+
+Record that warehouse staff have physically picked the defective items for the vendor return.
+
+### Request body
+
+```json
+{
+  "returnNumber": "VR-2026-00050"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `returnNumber` | string | **Yes** | The vendor return number |
+
+### Response `200 OK`
+
+```json
+{
+  "returnNumber": "VR-2026-00050",
+  "messages": ["Vendor return marked as picked."]
+}
+```
+
+### Used in
+
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 4: vendor return lifecycle
+- [Vendor returns](/warranty-hub/vendor-returns) — Picked status

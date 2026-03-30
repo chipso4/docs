@@ -1,0 +1,54 @@
+---
+title: "Acknowledge RMA"
+description: "PATCH /v1/return/acknowledge — Approve an RMA for processing."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `PATCH /v1/return/acknowledge`
+
+Acknowledge an RMA, signaling it has been reviewed and approved for processing.
+
+<Tabs>
+  <Tab title="Standalone return">
+    Moves the RMA forward in the ERP's workflow after creation. Items can now ship back to the warehouse.
+  </Tab>
+  <Tab title="Warranty flow">
+    Transitions the RMA from **DRAFT → FINAL** after the warranty claim is approved. This authorizes the credit issuance in [Phase 5](/warranty-hub/warranty-flow#phase-5-credit-the-customer).
+  </Tab>
+</Tabs>
+
+<Note>
+**V2 equivalent:** `PUT /api/btu/v2/rma/{rmaNumber}` — update `rmaStatus` on the [`CoreRma`](/data-types/core-objects) entity.
+</Note>
+
+### Request body
+
+```json
+{
+  "rmaNumber": "RMA-2026-00100",
+  "acknowledgeLocation": "WH-10"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `rmaNumber` | string | **Yes** | The RMA number to acknowledge |
+| `acknowledgeLocation` | string | No | Warehouse location for acknowledgment |
+
+### Response `200 OK`
+
+```json
+{
+  "rmaNumber": "RMA-2026-00100",
+  "messages": ["RMA acknowledged successfully."]
+}
+```
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Step 5: approve for processing
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 5: finalize RMA (DRAFT → FINAL)

@@ -1,62 +1,56 @@
 ---
-title: "Manufacturer Warranty Hub"
+title: "Continuum Integration Platform"
 sidebarTitle: "Introduction"
-description: "The integration guide for manufacturers connecting to Continuum's warranty automation platform."
+description: "Integration guides for connecting your systems to Continuum's warranty and returns automation platform."
 ---
 
 <Note>
-**This is a reverse integration guide.** It defines the API endpoints your team will build and host so that Continuum can connect to your systems. Think of it as the contract between us — we handle the consumer experience, and your middleware provides the data.
+**These are reverse integration guides.** They define the API endpoints your team will build and host so that Continuum can connect to your systems. Think of it as the contract between us — we handle the experience, and your middleware provides the data.
 </Note>
 
 ## The 30-second version
 
-Continuum runs the consumer-facing warranty portal for your products. Consumers register, check coverage, and file claims through our UI. Behind the scenes, we call **your** middleware API to retrieve serial data, warranty entitlements, parts, and documents from your systems.
+Continuum is a warranty and returns automation platform. We manage warranty claims, product returns, and replacement orders on behalf of distributors and manufacturers. Behind the scenes, we call **your** API to look up data and create transactions in your systems.
 
 You build the middleware. We handle the rest.
 
 ```
-Consumer → Continuum → Your API → Your ERP
+User → Continuum → Your API → Your ERP / OEM Systems
 ```
 
-<CardGroup cols={2}>
-  <Card title="24" icon="plug">
-    Endpoints to implement
+---
+
+## Three integration hubs
+
+Continuum's integration surface is organized into three hubs. Each hub serves a different business process. You may use one, two, or all three depending on your needs.
+
+<CardGroup cols={3}>
+  <Card title="Returns Hub" icon="rotate-left" href="/returns-hub/introduction">
+    **Non-defect product returns.** Wrong item shipped, overstock, buyer's remorse. Full RMA lifecycle from creation through receiving and credit.
   </Card>
-  <Card title="OAuth2" icon="lock">
-    Client credentials auth
+  <Card title="Warranty Hub" icon="shield-check" href="/warranty-hub/introduction">
+    **Warranty replacements and vendor returns.** Create replacement sales orders, manage the return of defective units back to the OEM.
+  </Card>
+  <Card title="Warranty Claims Hub" icon="file-invoice" href="/warranty-claims-hub/introduction">
+    **OEM-facing claim processing.** Validate serial numbers, check entitlement, submit claims to the manufacturer, track through to payment.
   </Card>
 </CardGroup>
 
 ---
 
-## Getting started
+## How the hubs relate
 
-Your middleware is a JSON REST API that translates between Continuum's standard contract and your internal systems. It doesn't matter if you run SAP, Oracle, NetSuite, Epicor, or a custom database — your middleware abstracts that behind a consistent interface.
+The three hubs are not completely independent — in a warranty event they are phases in a single orchestrated process. But each hub can also operate standalone.
 
 <Frame>
-  <img src="/images/architecture-diagram.svg" alt="Integration architecture: Consumer, Contractor, and Distributor connect to Continuum, which connects via HTTPS to your middleware API, which connects to your ERP, Warranty DB, and Document storage." />
+  <img src="/images/architecture-diagram.svg" alt="Integration architecture showing the three hubs and their relationships." />
 </Frame>
 
-<Tabs>
-  <Tab title="What Continuum handles">
-    - Consumer-facing web portal and contractor portal
-    - Product registration UI and data storage
-    - Claims creation, validation, tracking, and resolution
-    - Attachment uploads and document management
-    - Claim status notifications and workflow automation
-    - Historical data import and incremental sync
-  </Tab>
-  <Tab title="What you implement">
-    - Serial number validation and unit lookups
-    - Warranty entitlement checks with coverage tiers
-    - Bill of materials and replacement parts
-    - Warranty disposition codes (failure classification)
-    - Product media (manuals, images, diagrams)
-    - Contractor directory and distributor data
-    - Labor rate schedules
-    - Registration write-back to your warranty database
-  </Tab>
-</Tabs>
+**The Returns Hub is the foundation.** Customer, product, and invoice lookup endpoints are built here and reused by the Warranty Hub. Start here.
+
+**The Warranty Hub adds replacement orders and vendor returns.** It orchestrates the full warranty event across all three hubs — from identifying the defect through crediting the customer.
+
+**The Warranty Claims Hub connects to the OEM.** It talks to the manufacturer's warranty system (e.g., Rheem, Daikin), not your ERP. It handles serial validation, BOM lookups, and claim submission.
 
 ---
 
@@ -65,119 +59,19 @@ Your middleware is a JSON REST API that translates between Continuum's standard 
 <CardGroup cols={2}>
 
 <Card title="Understand the architecture" icon="sitemap" href="/overview/architecture" horizontal>
-  See where your middleware sits and what systems it connects to.
+  See how the three hubs fit together, what's shared, and what's hub-specific.
 </Card>
 
 <Card title="Learn the key concepts" icon="lightbulb" href="/overview/key-concepts" horizontal>
   Coverage tiers, effective dates, part cross-references, and the extensibility model.
 </Card>
 
-<Card title="Follow the implementation guide" icon="rocket" href="/getting-started/implementation-guide" horizontal>
-  Step-by-step walkthrough of building your middleware from scratch.
+<Card title="Pick your hub" icon="arrow-right" horizontal>
+  Jump to the hub guide for the product you're implementing: [Returns](/returns-hub/introduction) · [Warranty](/warranty-hub/introduction) · [Claims](/warranty-claims-hub/introduction)
 </Card>
 
 <Card title="Browse the API reference" icon="code" href="/api-reference/overview" horizontal>
-  Every endpoint with parameters, response schemas, and examples.
+  Every endpoint with parameters, response schemas, and examples — unified across all hubs.
 </Card>
 
 </CardGroup>
-
----
-
-## The workflows your API powers
-
-Every call Continuum makes to your middleware happens within one of these workflows. Each page shows the sequence of API calls, what data flows, and which endpoints are involved.
-
-<AccordionGroup>
-  <Accordion title="Product registration" icon="clipboard-check" defaultOpen>
-    A consumer enters a serial number → Continuum validates it against your ERP, auto-fills product and distributor fields, and syncs the completed registration back to your warranty database.
-
-    **Your endpoints called:** `validate-unit` → `units/{serial}` → `units/{serial}/distributor` → `contractors` → `registrations/sync`
-
-    [View full flow →](/process-flows/registration)
-  </Accordion>
-
-  <Accordion title="Warranty verification" icon="shield-check">
-    Anyone looks up a serial number → Continuum retrieves unit details and displays warranty coverage broken out by tier (tank, parts, labor), with replacement parts and product documentation.
-
-    **Your endpoints called:** `units/{serial}` → `warranty-coverages` → `units/{serial}/parts` → `media`
-
-    [View full flow →](/process-flows/warranty-verification)
-  </Accordion>
-
-  <Accordion title="Claims processing" icon="file-invoice">
-    A contractor diagnoses a failure → Continuum checks entitlement, presents the BOM for part selection, retrieves warranty codes for failure classification, and finds replacement parts — then manages the claim lifecycle internally.
-
-    **Your endpoints called:** `validate-unit` → `entitlement-information` → `bill-of-materials` → `warranty-codes` → `replacements`
-
-    [View full flow →](/process-flows/claims-processing)
-  </Accordion>
-
-  <Accordion title="Media center" icon="folder-open">
-    A consumer or contractor searches for product documentation → Continuum retrieves manuals, spec sheets, wiring diagrams, images, and other media from your systems via a unified media endpoint.
-
-    **Your endpoints called:** `media?model_number={model}` or `media?part_number={part}`
-
-    [View full flow →](/process-flows/media-center)
-  </Accordion>
-
-  <Accordion title="Historical import" icon="database">
-    On go-live, Continuum pulls your full registration history via paginated bulk export so the portal starts with complete data. After initial load, incremental syncs keep everything current.
-
-    **Your endpoints called:** `import/registrations?page=1&page_size=100`
-
-    [View full flow →](/process-flows/historical-import)
-  </Accordion>
-</AccordionGroup>
-
----
-
-## Endpoint groups at a glance
-
-<CardGroup cols={3}>
-
-<Card title="Unit & product data" icon="box" href="/api-reference/unit-data/validate-unit">
-  6 endpoints — serial validation, unit details, entitlement, coverage tiers, BOM, distributor
-</Card>
-
-<Card title="Parts & BOM" icon="gear" href="/api-reference/parts/bill-of-materials">
-  4 endpoints — BOM for claims, cross-references, warranty codes, replacements
-</Card>
-
-<Card title="Media" icon="photo-film" href="/api-reference/media/get-media">
-  3 endpoints — unified docs/images/manuals by model or part, plus upload
-</Card>
-
-<Card title="Reference data" icon="database" href="/api-reference/reference-data/contractors">
-  7 endpoints — contractors, install types, locations, distributors, customers, labor rates
-</Card>
-
-<Card title="Registration" icon="clipboard-check" href="/api-reference/registration/registration-sync">
-  2 endpoints — registration write-back and historical bulk import
-</Card>
-
-<Card title="Auth & health" icon="lock" href="/getting-started/authentication">
-  2 endpoints — OAuth2 token exchange and health check
-</Card>
-
-</CardGroup>
-
----
-
-## Why this architecture?
-
-<Tabs>
-  <Tab title="For your IT team">
-    You own the middleware. That means you control security, data mapping, performance, and deployment. Continuum never has direct access to your ERP or databases. You can filter, transform, or redact any field before it leaves your network.
-  </Tab>
-  <Tab title="For your business">
-    Consumers get a modern, branded warranty portal without you building one from scratch. Claims that used to take 20+ minutes of manual data entry now process automatically. Contractors stop calling your 1-800 number to check serial numbers.
-  </Tab>
-  <Tab title="For your customers">
-    Homeowners register products in minutes instead of mailing in cards. Contractors file warranty claims on-site instead of driving to the distributor with paperwork. Everyone can check coverage status instantly, 24/7.
-  </Tab>
-</Tabs>
-
-<Tip>
-**Ready to start?** Jump to the [implementation guide](/getting-started/implementation-guide) for a step-by-step walkthrough, or go straight to the [API reference](/api-reference/overview) if you want to dive into the endpoints.
-</Tip>

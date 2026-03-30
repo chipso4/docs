@@ -1,0 +1,68 @@
+---
+title: "Search invoices"
+description: "GET /v1/invoices — Retrieve invoice headers as CoreInvoice entities within a date range."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/invoices`
+
+Retrieve invoice headers within a date range. Returns [`CoreInvoice`](/data-types/core-objects#coreinvoice) entities (header-level summary — without line items). Supports pagination. Also used for background bulk caching of invoice data for warranty claim processing.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `FromDate` | string (date) | No | Start of date range (ISO 8601) |
+| `ToDate` | string (date) | No | End of date range (ISO 8601) |
+| `page` | integer | No | Page number (default: 1) |
+| `limit` | integer | No | Results per page (default: 50) |
+
+### Response `200 OK`
+
+```json
+{
+  "invoices": [
+    {
+      "invoiceNumber": "INV-2026-00520",
+      "status": "POSTED",
+      "invoiceDate": "2026-03-15T00:00:00Z",
+      "dueDate": "2026-04-14T00:00:00Z",
+      "shipDate": "2026-03-14T00:00:00Z",
+      "currency": "USD",
+      "subTotal": 499.98,
+      "taxTotal": 41.24,
+      "freightTotal": 0.00,
+      "totalAmount": 541.22,
+      "amountDue": 541.22,
+      "poNumber": "PO-99001",
+      "orderNumber": "SO-2026-04200",
+      "paymentTerms": "NET30",
+      "customer": {
+        "organizationId": "C-827451",
+        "organizationName": "Northern Manufacturing Inc.",
+        "organizationType": "Customer"
+      },
+      "extendedAttributes": []
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 50,
+    "totalResults": 1243,
+    "totalPages": 25,
+    "hasNextPage": true,
+    "hasPreviousPage": false
+  }
+}
+```
+
+Each item in the `invoices` array follows the [`CoreInvoice`](/data-types/core-objects#coreinvoice) schema (header fields only — `items` is not populated in list responses). Use [`GET /v1/invoices/details`](/api-reference/invoices/invoice-details) for the full invoice with line items.
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Step 2: find the original sale
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 0: background invoice caching

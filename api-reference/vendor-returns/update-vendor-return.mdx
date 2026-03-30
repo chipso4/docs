@@ -1,0 +1,39 @@
+---
+title: "Update vendor return"
+description: "PATCH /v1/vendor-return — Update header fields on an existing vendor return."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `PATCH /v1/vendor-return`
+
+Update an existing vendor return — modify header fields like reason, notes, or carrier.
+
+### Request body
+
+```json
+{
+  "returnNumber": "VR-2026-00050",
+  "returnReason": "PREMATURE_FAILURE",
+  "notes": "Updated: warranty claim CL-2026-0088 approved",
+  "carrierCode": "UPS"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `returnNumber` | string | **Yes** | The vendor return number |
+| `returnReason` | string | No | Updated reason code |
+| `notes` | string | No | Updated notes |
+| `carrierCode` | string | No | Carrier code |
+
+### Response `200 OK`
+
+```json
+{
+  "returnNumber": "VR-2026-00050",
+  "messages": ["Vendor return updated."]
+}
+```

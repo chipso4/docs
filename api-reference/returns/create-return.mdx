@@ -1,0 +1,131 @@
+---
+title: "Create return (RMA)"
+description: "POST /v1/return — Create a new RMA using the CoreRma entity model."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `POST /v1/return`
+
+Create a new RMA. The request body is a [`CoreRma`](/data-types/core-objects#corerma) entity with [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) composition for addresses and [`CoreRmaReturnItem`](/data-types/core-objects#corermareturniitem) for line items.
+
+<Tabs>
+  <Tab title="Standalone return">
+    Used in the [return flow](/returns-hub/return-flow) when a customer is returning a non-defect product. The RMA is created in an active state and proceeds through acknowledge → receive → credit.
+  </Tab>
+  <Tab title="Warranty flow">
+    Used in the [warranty flow](/warranty-hub/warranty-flow) to create an RMA in **DRAFT** status early in the process. The RMA sits dormant until the warranty claim is approved, then is finalized in Phase 5.
+  </Tab>
+</Tabs>
+
+### Request body
+
+```json
+{
+  "returnType": "STOCK_RETURN",
+  "requestedRemedy": "CREDIT",
+  "customerId": "C-827451",
+  "customerName": "Northern Manufacturing Inc.",
+  "originalOrderNumber": "SO-2026-04100",
+  "submitterName": "Jane Smith",
+  "submitterEmail": "jane.smith@example.com",
+  "submitterPhone": "214-555-0101",
+  "carrierCode": "UPS",
+  "evaluationNotes": "Customer ordered wrong motor size",
+  "billTo": {
+    "accountNumber": "C-827451",
+    "accountName": "Northern Manufacturing Inc.",
+    "accountType": "BillTo",
+    "location": {
+      "locationId": "4894",
+      "locationName": "Corporate Billing",
+      "locationType": "billto",
+      "address": {
+        "address1": "500 Commerce St",
+        "city": "Dallas",
+        "stateCode": "TX",
+        "zip": "75201",
+        "countryCode": "US"
+      }
+    }
+  },
+  "shipTo": {
+    "accountNumber": "C-827451",
+    "accountName": "Northern Manufacturing Inc.",
+    "accountType": "ShipTo",
+    "location": {
+      "locationId": "4893",
+      "locationName": "Dallas Main Warehouse",
+      "locationType": "shipto",
+      "address": {
+        "address1": "1200 Industrial Blvd",
+        "address2": "Suite 300",
+        "city": "Dallas",
+        "stateCode": "TX",
+        "zip": "75207",
+        "countryCode": "US"
+      }
+    }
+  },
+  "returnTo": {
+    "accountType": "ReturnTo",
+    "location": {
+      "locationId": "WH-10",
+      "locationName": "Dallas Main Warehouse",
+      "locationType": "warehouse"
+    }
+  },
+  "items": [
+    {
+      "lineNumber": "1",
+      "partNo": "PROD-12345",
+      "description": "Heavy-Duty Industrial Motor 5HP",
+      "quantity": 1,
+      "unitOfMeasure": "EA",
+      "unitPrice": 249.99,
+      "returnReasonCode": "WRONG_ITEM",
+      "invoiceNumber": "INV-2026-00520",
+      "invoiceDate": "2026-03-15T00:00:00Z",
+      "originalPrice": 249.99,
+      "manufacturerPartNo": "MFR-MOT-5HP",
+      "serialNumbers": ["SN-00998877"]
+    }
+  ],
+  "extendedAttributes": []
+}
+```
+
+The request body follows the [`CoreRma`](/data-types/core-objects#corerma) schema. Required fields:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `customerId` | string | **Yes** | Customer identifier |
+| `items` | [CoreRmaReturnItem[]](/data-types/core-objects#corermareturniitem) | **Yes** | At least one line item |
+| `items[].partNo` | string | **Yes** | Product/part number |
+| `items[].quantity` | decimal | **Yes** | Return quantity |
+| `items[].unitPrice` | decimal | **Yes** | Unit price |
+| `items[].unitOfMeasure` | string | **Yes** | Unit of measure |
+
+All other fields from the `CoreRma` schema are optional. See the [core objects reference](/data-types/core-objects#corerma) for the full field listing.
+
+### Response `201 Created`
+
+Returns the full [`CoreRma`](/data-types/core-objects#corerma) entity as created in the ERP, including the assigned `rmaNumber` and `status`.
+
+```json
+{
+  "rmaNumber": "RMA-2026-00100",
+  "status": "OPEN",
+  "createdDate": "2026-03-10T15:00:00Z",
+  "customerId": "C-827451",
+  "customerName": "Northern Manufacturing Inc."
+}
+```
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Step 4: create the RMA
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 5: RMA created in DRAFT

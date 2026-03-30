@@ -1,0 +1,49 @@
+---
+title: "RMA reason codes"
+description: "GET /v1/codes/rma-reasons — Valid return reason codes for RMA creation."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/codes/rma-reasons`
+
+Retrieve all available RMA reason codes. These classify why a product is being returned and are presented to the user during RMA creation.
+
+### Response `200 OK`
+
+```json
+{
+  "reasonCodes": [
+    {
+      "code": "DEFECTIVE_PART",
+      "description": "Part was defective upon arrival"
+    },
+    {
+      "code": "WRONG_ITEM",
+      "description": "Incorrect item was shipped"
+    },
+    {
+      "code": "DAMAGED_SHIPPING",
+      "description": "Item was damaged during shipping"
+    },
+    {
+      "code": "OVERSTOCK",
+      "description": "Customer returning excess inventory"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `reasonCodes` | array | List of reason code objects |
+| `reasonCodes[].code` | string | Short code representing the return reason |
+| `reasonCodes[].description` | string | Human-readable description |
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Step 3: gather return details
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 5: credit the customer

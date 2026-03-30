@@ -1,0 +1,84 @@
+---
+title: "Customer locations"
+description: "GET /v1/customers/locations — Retrieve all customer addresses (ship-to, bill-to, sold-to)."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+</div>
+
+## `GET /v1/customers/locations`
+
+Retrieve all addresses (locations) for a customer, regardless of type. These are customer addresses — ship-to, bill-to, and sold-to — not warehouse locations.
+
+<Note>
+**V2 equivalent:** `GET /api/btu/v2/organization/{organizationId}/locations` — returns [`CoreLocation`](/data-types/core-objects) entities with `locationType` filters.
+</Note>
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `customerId` | string | **Yes** | The customer's unique identifier |
+| `searchName` | string | No | Filter locations by name |
+| `searchStateCode` | string | No | Filter by two-letter state code (e.g., `"TX"`) |
+
+### Response `200 OK`
+
+Returns an array of [`CoreLocation`](/data-types/core-objects)-shaped objects:
+
+```json
+[
+  {
+    "locationId": "4893",
+    "locationCode": "WH-DALLAS-01",
+    "locationName": "Dallas Main Warehouse",
+    "locationType": "shipto",
+    "isActive": true,
+    "address": {
+      "address1": "1200 Industrial Blvd",
+      "address2": "Suite 300",
+      "city": "Dallas",
+      "state": "Texas",
+      "stateCode": "TX",
+      "zip": "75207",
+      "country": "United States",
+      "countryCode": "US"
+    },
+    "phone": "214-555-0100",
+    "email": "warehouse.dallas@example.com",
+    "primaryContact": {
+      "contactId": "CTX-9012",
+      "firstName": "Jane",
+      "lastName": "Smith",
+      "title": "Warehouse Manager",
+      "email": "jane.smith@example.com",
+      "phone": "214-555-0101",
+      "contactType": "Shipping",
+      "isPrimary": true,
+      "isActive": true
+    },
+    "glnNumber": "0012345000015",
+    "extendedAttributes": []
+  }
+]
+```
+
+### Type-specific convenience endpoints
+
+For common location lookups, use these filtered endpoints instead:
+
+| Method | Endpoint | Filter |
+|--------|----------|--------|
+| GET | `/v1/customers/locations/shipto` | Ship-to addresses only |
+| GET | `/v1/customers/locations/shipto/{locationId}` | Specific ship-to |
+| GET | `/v1/customers/locations/billto` | Bill-to addresses only |
+| GET | `/v1/customers/locations/billto/{locationId}` | Specific bill-to |
+| GET | `/v1/customers/locations/soldto` | Sold-to addresses only |
+| GET | `/v1/customers/locations/soldto/{locationId}` | Specific sold-to |
+
+All type-specific endpoints accept `customerId` as a query parameter and return the same location shape.
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Step 3: determine return destination

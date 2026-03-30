@@ -1,0 +1,43 @@
+---
+title: "Adjustment reason codes"
+description: "GET /v1/codes/adjustment-reasons — Valid inventory adjustment reason codes."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+</div>
+
+## `GET /v1/codes/adjustment-reasons`
+
+Retrieve all available inventory adjustment reason codes. Used when receiving returned items to classify the inventory adjustment.
+
+### Response `200 OK`
+
+```json
+{
+  "reasonCodes": [
+    {
+      "code": "CYCLE_COUNT",
+      "description": "Adjustment from cycle count reconciliation"
+    },
+    {
+      "code": "RECEIVING_ERROR",
+      "description": "Correction for a receiving discrepancy"
+    },
+    {
+      "code": "WAREHOUSE_DAMAGE",
+      "description": "Item damaged in warehouse"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `reasonCodes` | array | List of reason code objects |
+| `reasonCodes[].code` | string | Short code for the adjustment reason |
+| `reasonCodes[].description` | string | Human-readable description |
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Step 5: receive returned items

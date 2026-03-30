@@ -1,15 +1,15 @@
 ---
 title: "API overview"
-description: "Summary of all endpoints the manufacturer must implement, organized by domain."
+description: "Unified endpoint reference across all three integration hubs — V2 entity-focused REST endpoints."
 ---
 
 ## Base URL
 
 ```
-https://{your-host}/v1
+https://{your-host}/api/btu/v2
 ```
 
-Replace `{your-host}` with your middleware API's hostname.
+Replace `{your-host}` with your API's hostname.
 
 ## Authentication
 
@@ -19,63 +19,162 @@ All endpoints require an OAuth2 bearer token. See [Authentication](/getting-star
 Authorization: Bearer {access_token}
 ```
 
-## Endpoint summary
+## Hub badges
 
-Your middleware must implement the following 24 endpoints. Click any endpoint for the full specification.
+Each endpoint page shows which hub(s) use it:
 
-### Unit & product data
+- <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span> — Non-defect returns and the shared ERP foundation
+- <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span> — Replacement orders and vendor returns
+- <span style={{background: '#FAECE7', color: '#993C1D', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Claims Hub</span> — OEM-facing claim processing
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | [`/v1/validate-unit`](/api-reference/unit-data/validate-unit) | Validate serial number, return model(s) |
-| GET | [`/v1/units/{serial_number}`](/api-reference/unit-data/get-unit) | Full unit record |
-| GET | [`/v1/entitlement-information`](/api-reference/unit-data/entitlement-information) | Warranty entitlement with coverage tiers |
-| GET | [`/v1/units/{serial_number}/warranty-coverages`](/api-reference/unit-data/warranty-coverages) | Coverage tiers only |
-| GET | [`/v1/units/{serial_number}/parts`](/api-reference/unit-data/unit-parts) | BOM with specs and images |
-| GET | [`/v1/units/{serial_number}/distributor`](/api-reference/unit-data/unit-distributor) | Distributor that sold the unit |
+Endpoints with multiple badges are shared — build once, used by multiple hubs.
 
-### Parts & BOM
+## V2 design
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | [`/v1/bill-of-materials`](/api-reference/parts/bill-of-materials) | BOM for claims context |
-| GET | [`/v1/parts/cross-reference`](/api-reference/parts/cross-reference) | Part supersession and brand cross-references |
-| GET | [`/v1/products/warranty-codes`](/api-reference/parts/warranty-codes) | Hierarchical warranty disposition codes |
-| GET | [`/v1/products/replacements`](/api-reference/parts/replacements) | Replacement part options |
+The V2 API uses **entity-focused REST endpoints** backed by unified Core types. Key changes from V1:
 
-### Media
+- **One entity, one endpoint** — V1's 17+ RMA PATCH routes collapse into `POST` (create) + `GET` (read) + `PUT` (update) on [`CoreRma`](/data-types/core-objects#corerma)
+- **Unified entities** — Customers, vendors, and corporations merge into [`CoreOrganization`](/data-types/core-objects#coreorganization); ship-to/bill-to/sold-to merge into [`CoreLocation`](/data-types/core-objects#corelocation) with type filters
+- **Composition** — [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) wraps a location with account context; used on invoices, orders, and RMAs for all address roles
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | [`/v1/media`](/api-reference/media/get-media) | Documents, images, manuals by model or part |
-| GET | [`/v1/media/{id}`](/api-reference/media/get-media-by-id) | Specific media item by ID |
-| POST | [`/v1/media`](/api-reference/media/upload-media) | Manual media upload |
+---
 
-### Reference data
+## Shared foundation (Returns + Warranty hubs)
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | [`/v1/contractors`](/api-reference/reference-data/contractors) | Contractor directory search |
-| GET | [`/v1/install-types`](/api-reference/reference-data/install-types) | Valid installation types per model |
-| GET | [`/v1/locations`](/api-reference/reference-data/locations) | Warranty service locations |
-| GET | [`/v1/corporations`](/api-reference/reference-data/corporations) | Authorized distributors |
-| GET | [`/v1/corporations/details`](/api-reference/reference-data/corporation-details) | Distributor details |
-| GET | [`/v1/corporations/customers`](/api-reference/reference-data/corporation-customers) | Customers under a distributor |
-| GET | [`/v1/labor-rates`](/api-reference/reference-data/labor-rates) | Labor and travel rate schedule |
+### Reference codes
 
-### Registration & import
+| Method | V2 endpoint | API reference |
+|--------|-------------|---------------|
+| GET | `/api/btu/v2/codes/rma-reasons` | [RMA reason codes](/api-reference/codes/rma-reasons) |
+| GET | `/api/btu/v2/codes/ship-vias` | [Ship via codes](/api-reference/codes/ship-vias) |
+| GET | `/api/btu/v2/codes/adjustment-reasons` | [Adjustment reasons](/api-reference/codes/adjustment-reasons) |
+| GET | `/api/btu/v2/codes/warranty-reasons` | [Warranty reasons](/api-reference/codes/warranty-reasons) |
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| POST | [`/v1/registrations/sync`](/api-reference/registration/registration-sync) | Push registration to your system |
-| GET | [`/v1/import/registrations`](/api-reference/registration/import-registrations) | Bulk historical registration export |
+### Organizations (Customers, vendors, corporations)
 
-### System
+| Method | V2 endpoint | API reference | V2 entity |
+|--------|-------------|---------------|-----------|
+| GET | `/api/btu/v2/organizations` | [List customers](/api-reference/customers/list-customers) | [CoreOrganization](/data-types/core-objects#coreorganization) |
+| GET | `/api/btu/v2/organization/{id}` | [Customer details](/api-reference/customers/customer-details) | [CoreOrganization](/data-types/core-objects#coreorganization) |
+| GET | `/api/btu/v2/organization/{id}/contacts` | [Contacts](/api-reference/customers/contacts) | [CoreContact](/data-types/core-objects#corecontact) |
+| GET | `/api/btu/v2/contact/{contactId}` | [Contact details](/api-reference/customers/contact-details) | [CoreContact](/data-types/core-objects#corecontact) |
+| GET | `/api/btu/v2/contacts?Email={email}` | [Contact by email](/api-reference/customers/contact-by-email) | [CoreContact](/data-types/core-objects#corecontact) |
+| GET | `/api/btu/v2/organization/{id}/locations` | [Customer locations](/api-reference/customers/locations) | [CoreLocation](/data-types/core-objects#corelocation) |
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| POST | [`/v1/oauth2/token`](/getting-started/authentication) | OAuth2 token exchange |
-| GET | `/v1/health` | Health check |
+### Parts & products
+
+| Method | V2 endpoint | API reference | V2 entity |
+|--------|-------------|---------------|-----------|
+| GET | `/api/btu/v2/part/{partId}` | [Product details](/api-reference/products/product-details) | [CorePart](/data-types/core-objects#corepart) |
+| GET | `/api/btu/v2/parts?checkAvailability=true` | [Availability](/api-reference/products/availability) | [CorePart](/data-types/core-objects#corepart) |
+| GET | `/api/btu/v2/parts?CustomerId={id}` | [Customer pricing](/api-reference/products/pricing-customer) | [CorePart](/data-types/core-objects#corepart) |
+| GET | `/api/btu/v2/parts?VendorId={id}` | [Vendor pricing](/api-reference/products/pricing-vendor) | [CorePart](/data-types/core-objects#corepart) |
+| GET | `/api/btu/v2/parts?CrossRef={code}` | [Cross-reference](/api-reference/products/cross-reference) | [CorePart](/data-types/core-objects#corepart) |
+
+### Invoices
+
+| Method | V2 endpoint | API reference | V2 entity |
+|--------|-------------|---------------|-----------|
+| GET | `/api/btu/v2/invoices` | [Search invoices](/api-reference/invoices/search-invoices) | [CoreInvoice](/data-types/core-objects#coreinvoice) |
+| GET | `/api/btu/v2/invoice/{invoiceNumber}` | [Invoice details](/api-reference/invoices/invoice-details) | [CoreInvoice](/data-types/core-objects#coreinvoice) |
+| GET | `/api/btu/v2/invoice/{invoiceNumber}/lines` | [Invoice lines](/api-reference/invoices/invoice-lines) | [CoreInvoiceLineItem](/data-types/core-objects#coreinvoicelineitem) |
+
+---
+
+## Returns (RMA) — Returns Hub + Warranty Hub
+
+| Method | V2 endpoint | API reference | V2 entity |
+|--------|-------------|---------------|-----------|
+| POST | `/api/btu/v2/rma` | [Create return](/api-reference/returns/create-return) | [CoreRma](/data-types/core-objects#corerma) |
+| GET | `/api/btu/v2/rma/{rmaNumber}` | [Get return](/api-reference/returns/get-return) | [CoreRma](/data-types/core-objects#corerma) |
+| PUT | `/api/btu/v2/rma/{rmaNumber}` | [Acknowledge](/api-reference/returns/acknowledge) · [Receive](/api-reference/returns/receive) · [Credit](/api-reference/returns/credit-lines) | [CoreRma](/data-types/core-objects#corerma) |
+
+<Info>
+V1's 15+ PATCH routes (`/return/acknowledge`, `/return/receive`, `/return/credit-lines`, `/return/add-lines`, etc.) all collapse into a single `PUT` on [`CoreRma`](/data-types/core-objects#corerma). The action is expressed by the fields being updated — status changes, line item additions, credit amounts — not by separate routes.
+</Info>
+
+---
+
+## Sales orders — Warranty Hub
+
+| Method | V2 endpoint | API reference | V2 entity |
+|--------|-------------|---------------|-----------|
+| POST | `/api/btu/v2/order` | [Create order](/api-reference/orders/create-order) | [CoreOrder](/data-types/core-objects#coreorder) |
+| GET | `/api/btu/v2/order/{orderNumber}` | [Get order](/api-reference/orders/get-order) | [CoreOrder](/data-types/core-objects#coreorder) |
+| PUT | `/api/btu/v2/order/{orderNumber}` | *(all modifications)* | [CoreOrder](/data-types/core-objects#coreorder) |
+| GET | `/api/btu/v2/orders` | [Order status](/api-reference/orders/order-status) | [CoreOrder](/data-types/core-objects#coreorder) |
+| GET | `/api/btu/v2/invoices?OrderNumber={id}` | [Order invoices](/api-reference/orders/order-invoices) | [CoreInvoice](/data-types/core-objects#coreinvoice) |
+
+---
+
+## Vendor returns — Warranty Hub
+
+| Method | V2 endpoint | API reference |
+|--------|-------------|---------------|
+| POST | `/api/btu/v2/vendor-return` | [Create vendor return](/api-reference/vendor-returns/create-vendor-return) |
+| GET | `/api/btu/v2/vendor-return/{id}` | [Get vendor return](/api-reference/vendor-returns/get-vendor-return) |
+| PATCH | `/api/btu/v2/vendor-return` | [Update vendor return](/api-reference/vendor-returns/update-vendor-return) |
+| PATCH | `/api/btu/v2/vendor-return/approve` | [Approve](/api-reference/vendor-returns/approve) |
+| PATCH | `/api/btu/v2/vendor-return/picked` | [Picked](/api-reference/vendor-returns/picked) |
+| PATCH | `/api/btu/v2/vendor-return/ship` | [Ship](/api-reference/vendor-returns/ship) |
+
+---
+
+## Unit & product data — Claims Hub
+
+| Method | V2 endpoint | API reference |
+|--------|-------------|---------------|
+| GET | `/api/btu/v2/validate-unit` | [Validate unit](/api-reference/unit-data/validate-unit) |
+| GET | `/api/btu/v2/units/{serial_number}` | [Get unit](/api-reference/unit-data/get-unit) |
+| GET | `/api/btu/v2/entitlement-information` | [Entitlement](/api-reference/unit-data/entitlement-information) |
+| GET | `/api/btu/v2/units/{serial_number}/warranty-coverages` | [Coverages](/api-reference/unit-data/warranty-coverages) |
+| GET | `/api/btu/v2/units/{serial_number}/parts` | [Unit parts](/api-reference/unit-data/unit-parts) |
+| GET | `/api/btu/v2/units/{serial_number}/distributor` | [Distributor](/api-reference/unit-data/unit-distributor) |
+
+## Parts & BOM — Claims Hub
+
+| Method | V2 endpoint | API reference |
+|--------|-------------|---------------|
+| GET | `/api/btu/v2/bill-of-materials` | [Bill of materials](/api-reference/parts/bill-of-materials) |
+| GET | `/api/btu/v2/parts/cross-reference` | [Cross-reference](/api-reference/parts/cross-reference) |
+| GET | `/api/btu/v2/products/warranty-codes` | [Warranty codes](/api-reference/parts/warranty-codes) |
+| GET | `/api/btu/v2/products/replacements` | [Replacements](/api-reference/parts/replacements) |
+
+## Reference data — Claims Hub
+
+| Method | V2 endpoint | API reference |
+|--------|-------------|---------------|
+| GET | `/api/btu/v2/contractors` | [Contractors](/api-reference/reference-data/contractors) |
+| GET | `/api/btu/v2/install-types` | [Install types](/api-reference/reference-data/install-types) |
+| GET | `/api/btu/v2/locations` | [Locations](/api-reference/reference-data/locations) |
+| GET | `/api/btu/v2/corporations` | [Corporations](/api-reference/reference-data/corporations) |
+| GET | `/api/btu/v2/corporations/details` | [Corp details](/api-reference/reference-data/corporation-details) |
+| GET | `/api/btu/v2/corporations/customers` | [Corp customers](/api-reference/reference-data/corporation-customers) |
+| GET | `/api/btu/v2/labor-rates` | [Labor rates](/api-reference/reference-data/labor-rates) |
+
+## Media
+
+| Method | V2 endpoint | API reference |
+|--------|-------------|---------------|
+| GET | `/api/btu/v2/media` | [Get media](/api-reference/media/get-media) |
+| GET | `/api/btu/v2/media/{id}` | [Get media by ID](/api-reference/media/get-media-by-id) |
+| POST | `/api/btu/v2/media` | [Upload media](/api-reference/media/upload-media) |
+
+## Registration & import
+
+| Method | V2 endpoint | API reference |
+|--------|-------------|---------------|
+| POST | `/api/btu/v2/registrations/sync` | [Registration sync](/api-reference/registration/registration-sync) |
+| GET | `/api/btu/v2/import/registrations` | [Import registrations](/api-reference/registration/import-registrations) |
+
+## System
+
+| Method | V2 endpoint | API reference |
+|--------|-------------|---------------|
+| POST | `/api/btu/v2/oauth2/token` | [Authentication](/getting-started/authentication) |
+| GET | `/api/btu/v2/health` | Health check |
+
+---
 
 ## Response conventions
 
@@ -83,4 +182,5 @@ Your middleware must implement the following 24 endpoints. Click any endpoint fo
 - Dates use ISO 8601 format (`2024-01-15` or `2024-01-15T14:30:00Z`)
 - All errors follow the [standard error format](/getting-started/error-handling)
 - List endpoints support [pagination](/data-types/core-objects#paginatedresponse)
-- Every entity supports [`extendedAttributes`](/overview/key-concepts#the-extendedattributes-pattern) for custom fields
+- Every entity supports [`extendedAttributes`](/data-types/core-objects#dataattribute) for custom fields
+- All V2 entities are documented in the [Core objects reference](/data-types/core-objects)

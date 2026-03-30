@@ -1,0 +1,89 @@
+---
+title: "Invoice line items"
+description: "GET /v1/invoices/lines — Retrieve line items for a specific invoice as CoreInvoiceLineItem entities."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/invoices/lines`
+
+Retrieve line items for a specific invoice. Returns [`CoreInvoiceLineItem`](/data-types/core-objects#coreinvoicelineitem) entities with shipment tracking, vendor details, and serial numbers.
+
+<Info>
+**Prefer the details endpoint.** [`GET /v1/invoices/details`](/api-reference/invoices/invoice-details) returns the full [`CoreInvoice`](/data-types/core-objects#coreinvoice) with line items embedded. Use this endpoint only when you need line items without the invoice header.
+</Info>
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `InvoiceNumber` | string | **Yes** | The invoice number |
+
+### Response `200 OK`
+
+```json
+{
+  "invoiceNumber": "INV-2026-00520",
+  "items": [
+    {
+      "lineNumber": "1",
+      "partNo": "PROD-12345",
+      "description": "Heavy-Duty Industrial Motor 5HP",
+      "quantity": 2,
+      "unitOfMeasure": "EA",
+      "unitPrice": 249.99,
+      "extendedAmount": 499.98,
+      "manufacturerPartNo": "MFR-MOT-5HP",
+      "vendorPartNo": "V-5010-MOT5",
+      "upc": "012345678901",
+      "modelNumber": "MOT5HP-240V",
+      "vendor": {
+        "organizationId": "V-5010",
+        "organizationName": "Acme Motor Supply",
+        "organizationType": "Vendor"
+      },
+      "shipTo": {
+        "accountNumber": "C-827451",
+        "accountType": "ShipTo",
+        "location": {
+          "locationId": "4893",
+          "locationName": "Dallas Main Warehouse"
+        }
+      },
+      "taxRate": 8.25,
+      "serialNumbers": ["SN-00998877", "SN-00998878"],
+      "shipments": [
+        {
+          "shipmentNumber": "SHP-00234",
+          "trackingNumber": "1Z999AA10123456784",
+          "carrierCode": "UPS",
+          "carrierName": "UPS Ground",
+          "shipDate": "2026-03-14T00:00:00Z",
+          "shippedQuantity": 2,
+          "weight": 91.0,
+          "weightUOM": "LB"
+        }
+      ],
+      "extendedAttributes": []
+    }
+  ]
+}
+```
+
+Each item in the `items` array follows the [`CoreInvoiceLineItem`](/data-types/core-objects#coreinvoicelineitem) schema. Key nested types:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `vendor` | [`CoreOrganization`](/data-types/core-objects#coreorganization) | Vendor/supplier for this line |
+| `shipTo` | [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) | Line-level ship-to (overrides header) |
+| `shipments` | [`CoreLineShipment[]`](/data-types/core-objects#corelineshipment) | Shipment tracking per line |
+
+See the [core objects reference](/data-types/core-objects) for full field listings.
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Step 2: identify which products to return
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 0: background caching

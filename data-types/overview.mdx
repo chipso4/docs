@@ -1,33 +1,59 @@
 ---
 title: "Data types overview"
-description: "Design principles and conventions for all data types in the API."
+description: "V2 unified entity types — design principles and conventions."
 ---
 
 ## Design principles
 
-All data types in this API follow these conventions:
+All data types follow the V2 unified entity model (`primary-data-types.json`):
 
-1. **ERP-agnostic** — Classification fields use `string` rather than fixed enums. Your middleware maps your ERP's values to whatever string makes sense.
+1. **ERP-agnostic** — Classification fields like `organizationType`, `locationType`, and `contactType` use `string` rather than fixed enums. Your middleware maps your ERP's values to whatever string makes sense.
 
 2. **Nullable by default** — All fields are nullable unless marked as **required**. This accommodates ERP systems that may not populate every field.
 
-3. **Extensible via `extendedAttributes`** — Every entity supports a `DataAttribute[]` array for manufacturer-specific custom fields. This is how you pass product specs, industry-specific data, rate structures, and ERP-specific codes.
+3. **Extensible via `extendedAttributes`** — Every entity supports a `DataAttribute[]` array for custom fields. This is how you pass product specs, industry-specific data, rate structures, and ERP-specific codes without schema changes.
 
-4. **Consistent patterns** — Address, contact, and location structures are reused across all endpoints with the same shape.
+4. **Composition over embedding** — Address, contact, location, and account-location are standalone types composed into parent entities. A `CoreInvoice` HAS a `CoreAccountLocation` for its shipTo, which HAS a `CoreLocation`, which HAS a `CoreAddress`. No 15-field flat address blocks.
 
-5. **Multi-identifier parts** — Parts use the manufacturer part number (MPN) as the primary key, with `crossReferences` for supersession chains and brand cross-references.
+5. **Unified entities** — V1's separate Customer, Vendor, Supplier, and Corporation models are merged into `CoreOrganization` differentiated by `organizationType`. V1's 17+ RMA PATCH endpoints collapse into a single `CoreRma` entity. One shape, one contract.
 
-6. **Unified media** — Documents, images, manuals, and diagrams share a single `MediaItem` schema accessible through the `/v1/media` endpoint.
-
-## Type reference
+## V2 core entity types
 
 <CardGroup cols={2}>
 
 <Card title="Core objects" icon="cube" href="/data-types/core-objects">
-  Address, DataAttribute, pagination, error response
+  CoreAddress, CoreContact, CoreLocation, CoreOrganization, CoreAccountLocation, DataAttribute, CoreLineShipment, PaginatedResponse, Error
 </Card>
 
-<Card title="Contacts" icon="user" href="/data-types/contacts">
+<Card title="Invoices" icon="file-invoice" href="/data-types/core-objects#coreinvoice">
+  CoreInvoice + CoreInvoiceLineItem — unified invoice with line items, shipment tracking, and account-location composition
+</Card>
+
+<Card title="Orders" icon="cart-shopping" href="/data-types/core-objects#coreorder">
+  CoreOrder + CoreOrderItem — unified sales order with quantity allocation and shipment tracking
+</Card>
+
+<Card title="RMAs" icon="rotate-left" href="/data-types/core-objects#corerma">
+  CoreRma + CoreRmaReturnItem — unified RMA with credit calculations, disposition codes, and invoice linkage
+</Card>
+
+<Card title="Parts" icon="gear" href="/data-types/core-objects#corepart">
+  CorePart — unified product/part with pricing, dimensions, identifiers, and classification
+</Card>
+
+<Card title="Claims Hub types" icon="file-invoice" href="/data-types/parts">
+  BOMPart, ReplacementPart, WarrantyCode, PartCrossReference — OEM-specific types for the Claims Hub
+</Card>
+
+</CardGroup>
+
+## Claims Hub types
+
+The Warranty Claims Hub uses additional types specific to OEM claim processing. These are documented separately since they apply to the manufacturer middleware, not the distributor ERP:
+
+<CardGroup cols={3}>
+
+<Card title="Contacts (Claims)" icon="user" href="/data-types/contacts">
   HomeownerInfo, ContractorInfo, DistributorInfo, ClaimContactInfo
 </Card>
 
@@ -39,7 +65,7 @@ All data types in this API follow these conventions:
   WarrantySummary, WarrantyCoverage, ProRatedSchedule, LaborRateSchedule
 </Card>
 
-<Card title="Parts" icon="gear" href="/data-types/parts">
+<Card title="Parts (Claims)" icon="gear" href="/data-types/parts">
   BOMPart, ReplacementPart, PartCrossReference, WarrantyCode
 </Card>
 
@@ -56,4 +82,4 @@ All data types in this API follow these conventions:
 
 ## Field naming
 
-All field names use **camelCase** (e.g., `serialNumber`, `baseModel`, `installationType`).
+All field names use **camelCase** (e.g., `serialNumber`, `organizationType`, `invoiceNumber`).

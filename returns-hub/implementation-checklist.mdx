@@ -1,0 +1,82 @@
+---
+title: "Implementation checklist"
+sidebarTitle: "Implementation checklist"
+description: "Tiered build order for the Returns Hub — what to implement first and what depends on what."
+---
+
+Build your API in this order. Each tier builds on the previous one, so you can test incrementally. All endpoints use the V2 base URL: `/api/btu/v2/`.
+
+## Tier 1: Foundation
+
+Implement first. Everything else depends on these.
+
+<Accordion title="5 endpoints" defaultOpen>
+
+| Status | Method | V2 endpoint | API reference |
+|--------|--------|-------------|---------------|
+| ☐ | POST | `/api/btu/v2/oauth2/token` | [Authentication](/getting-started/authentication) |
+| ☐ | GET | `/api/btu/v2/health` | Health check |
+| ☐ | GET | `/api/btu/v2/codes/rma-reasons` | [RMA reasons](/api-reference/codes/rma-reasons) |
+| ☐ | GET | `/api/btu/v2/codes/ship-vias` | [Ship vias](/api-reference/codes/ship-vias) |
+| ☐ | GET | `/api/btu/v2/codes/adjustment-reasons` | [Adjustment reasons](/api-reference/codes/adjustment-reasons) |
+
+</Accordion>
+
+## Tier 2: Customer context
+
+Customers, contacts, and customer addresses. **These endpoints are shared with the Warranty Hub** — build once, use everywhere.
+
+<Accordion title="7 V2 endpoints (replaces 13 V1 endpoints)">
+
+In V2, the separate shipto/billto/soldto endpoints are replaced by `CoreLocation` with a `locationType` filter. Customers, vendors, and corporations are unified into `CoreOrganization`.
+
+| Status | Method | V2 endpoint | API reference | V2 entity |
+|--------|--------|-------------|---------------|-----------|
+| ☐ | GET | `/api/btu/v2/organizations?Type=Customer` | [List customers](/api-reference/customers/list-customers) | [CoreOrganization](/data-types/core-objects#coreorganization) |
+| ☐ | GET | `/api/btu/v2/organization/{id}` | [Customer details](/api-reference/customers/customer-details) | [CoreOrganization](/data-types/core-objects#coreorganization) |
+| ☐ | GET | `/api/btu/v2/organization/{id}/contacts` | [Contacts](/api-reference/customers/contacts) | [CoreContact](/data-types/core-objects#corecontact) |
+| ☐ | GET | `/api/btu/v2/contact/{contactId}` | [Contact details](/api-reference/customers/contact-details) | [CoreContact](/data-types/core-objects#corecontact) |
+| ☐ | GET | `/api/btu/v2/contacts?Email={email}` | [Contact by email](/api-reference/customers/contact-by-email) | [CoreContact](/data-types/core-objects#corecontact) |
+| ☐ | GET | `/api/btu/v2/organization/{id}/locations` | [Customer locations](/api-reference/customers/locations) | [CoreLocation](/data-types/core-objects#corelocation) |
+| ☐ | GET | `/api/btu/v2/locations?Type=shipto` | [Customer locations](/api-reference/customers/locations) | [CoreLocation](/data-types/core-objects#corelocation) |
+
+</Accordion>
+
+## Tier 3: Product & invoice lookup
+
+Needed before creating returns or orders. **Also shared with Warranty Hub.** Invoice endpoints support background bulk caching for warranty claims.
+
+<Accordion title="6 V2 endpoints">
+
+| Status | Method | V2 endpoint | API reference | V2 entity |
+|--------|--------|-------------|---------------|-----------|
+| ☐ | GET | `/api/btu/v2/part/{partId}` | [Product details](/api-reference/products/product-details) | [CorePart](/data-types/core-objects#corepart) |
+| ☐ | GET | `/api/btu/v2/parts?checkAvailability=true` | [Availability](/api-reference/products/availability) | [CorePart](/data-types/core-objects#corepart) |
+| ☐ | GET | `/api/btu/v2/parts?CustomerId={id}` | [Customer pricing](/api-reference/products/pricing-customer) | [CorePart](/data-types/core-objects#corepart) |
+| ☐ | GET | `/api/btu/v2/invoices` | [Search invoices](/api-reference/invoices/search-invoices) | [CoreInvoice](/data-types/core-objects#coreinvoice) |
+| ☐ | GET | `/api/btu/v2/invoice/{invoiceNumber}` | [Invoice details](/api-reference/invoices/invoice-details) | [CoreInvoice](/data-types/core-objects#coreinvoice) |
+| ☐ | GET | `/api/btu/v2/invoice/{invoiceNumber}/lines` | [Invoice lines](/api-reference/invoices/invoice-lines) | [CoreInvoiceLineItem](/data-types/core-objects#coreinvoicelineitem) |
+
+</Accordion>
+
+## Tier 4A: Returns lifecycle
+
+The core return workflow. In V2, all RMA operations use the [`CoreRma`](/data-types/core-objects#corerma) entity. The 15+ V1 PATCH routes collapse into `POST` (create) and `PUT` (update).
+
+<Accordion title="3 V2 endpoints (replaces 15+ V1 endpoints)" defaultOpen>
+
+| Status | Method | V2 endpoint | API reference | Purpose |
+|--------|--------|-------------|---------------|---------|
+| ☐ | POST | `/api/btu/v2/rma` | [Create return](/api-reference/returns/create-return) | Create an RMA |
+| ☐ | GET | `/api/btu/v2/rma/{rmaNumber}` | [Get return](/api-reference/returns/get-return) | Retrieve RMA details |
+| ☐ | PUT | `/api/btu/v2/rma/{rmaNumber}` | [Acknowledge](/api-reference/returns/acknowledge) · [Receive](/api-reference/returns/receive) · [Credit](/api-reference/returns/credit-lines) | All lifecycle operations: acknowledge, receive, credit, cancel, update lines, pricing, reason codes, restocking fees, serial numbers |
+
+**What the single `PUT` replaces:** acknowledge, receive, credit-lines, add-lines, cancel, cancel-lines, price, quantity, reason, restocking-fee, return-location, return-type, serial-number — all expressed by updating the relevant fields on the [`CoreRma`](/data-types/core-objects#corerma) entity.
+
+</Accordion>
+
+---
+
+## Next: add Warranty
+
+Once Returns is live, you can enable the [Warranty Hub](/warranty-hub/introduction) by adding order and vendor return endpoints. The shared foundation you've already built carries over.

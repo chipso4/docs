@@ -1,0 +1,32 @@
+---
+title: "Contact by email"
+description: "GET /v1/customers/contacts/by-email — Look up a customer contact by email address."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+</div>
+
+## `GET /v1/customers/contacts/by-email`
+
+Find a customer contact by email address. Useful when only the email is known.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `customerId` | string | **Yes** | The customer's unique identifier |
+| `email` | string | **Yes** | The email address to search for |
+
+### Response `200 OK`
+
+Returns a single contact object matching the [`CoreContact`](/data-types/contacts) schema.
+
+```json
+{
+  "contactId": "CTX-9012",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "emailAddress": "jane.smith@example.com"
+}
+```

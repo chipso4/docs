@@ -1,0 +1,174 @@
+---
+title: "Invoice details"
+description: "GET /v1/invoices/details — Retrieve a specific invoice with line items."
+---
+
+<div style={{display: 'flex', gap: '6px', marginBottom: '16px'}}>
+  <span style={{background: '#E1F5EE', color: '#0F6E56', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Returns Hub</span>
+  <span style={{background: '#EEEDFE', color: '#534AB7', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 500}}>Warranty Hub</span>
+</div>
+
+## `GET /v1/invoices/details`
+
+Retrieve full details for a specific invoice including line items. Returns a [`CoreInvoice`](/data-types/core-objects#coreinvoice) entity with embedded [`CoreInvoiceLineItem`](/data-types/core-objects#coreinvoicelineitem) array.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `InvoiceNumber` | string | **Yes** | The invoice number to retrieve |
+
+### Response `200 OK`
+
+```json
+{
+  "invoiceNumber": "INV-2026-00520",
+  "status": "POSTED",
+  "invoiceDate": "2026-03-15T00:00:00Z",
+  "dueDate": "2026-04-14T00:00:00Z",
+  "shipDate": "2026-03-14T00:00:00Z",
+  "createdDate": "2026-03-15T08:30:00Z",
+  "currency": "USD",
+  "subTotal": 499.98,
+  "taxTotal": 41.24,
+  "freightTotal": 0.00,
+  "discountTotal": 0.00,
+  "totalAmount": 541.22,
+  "amountPaid": 0.00,
+  "amountDue": 541.22,
+  "poNumber": "PO-99001",
+  "orderNumber": "SO-2026-04200",
+  "paymentTerms": "NET30",
+  "salesRepId": "SR-100",
+  "trackingNumber": "1Z999AA10123456784",
+  "customer": {
+    "organizationId": "C-827451",
+    "organizationName": "Northern Manufacturing Inc.",
+    "organizationType": "Customer"
+  },
+  "billTo": {
+    "accountNumber": "C-827451",
+    "accountName": "Northern Manufacturing Inc.",
+    "accountType": "BillTo",
+    "location": {
+      "locationId": "4894",
+      "locationName": "Corporate Billing",
+      "locationType": "billto",
+      "address": {
+        "address1": "500 Commerce St",
+        "city": "Dallas",
+        "state": "Texas",
+        "stateCode": "TX",
+        "zip": "75201",
+        "country": "United States",
+        "countryCode": "US"
+      },
+      "phone": "214-555-0200",
+      "email": "billing@example.com"
+    }
+  },
+  "shipTo": {
+    "accountNumber": "C-827451",
+    "accountName": "Northern Manufacturing Inc.",
+    "accountType": "ShipTo",
+    "location": {
+      "locationId": "4893",
+      "locationName": "Dallas Main Warehouse",
+      "locationType": "shipto",
+      "address": {
+        "address1": "1200 Industrial Blvd",
+        "address2": "Suite 300",
+        "city": "Dallas",
+        "state": "Texas",
+        "stateCode": "TX",
+        "zip": "75207",
+        "country": "United States",
+        "countryCode": "US"
+      },
+      "phone": "214-555-0100",
+      "email": "warehouse.dallas@example.com",
+      "primaryContact": {
+        "contactId": "CTX-9012",
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "contactType": "Shipping",
+        "isPrimary": true
+      }
+    }
+  },
+  "contact": {
+    "contactId": "CTX-9012",
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "email": "jane.smith@example.com",
+    "phone": "214-555-0101"
+  },
+  "items": [
+    {
+      "lineNumber": "1",
+      "partNo": "PROD-12345",
+      "description": "Heavy-Duty Industrial Motor 5HP",
+      "quantity": 2,
+      "unitOfMeasure": "EA",
+      "unitPrice": 249.99,
+      "extendedAmount": 499.98,
+      "manufacturerPartNo": "MFR-MOT-5HP",
+      "vendorPartNo": "V-5010-MOT5",
+      "upc": "012345678901",
+      "modelNumber": "MOT5HP-240V",
+      "vendor": {
+        "organizationId": "V-5010",
+        "organizationName": "Acme Motor Supply",
+        "organizationType": "Vendor"
+      },
+      "shipTo": {
+        "accountNumber": "C-827451",
+        "accountType": "ShipTo",
+        "location": {
+          "locationId": "4893",
+          "locationName": "Dallas Main Warehouse"
+        }
+      },
+      "taxRate": 8.25,
+      "serialNumbers": ["SN-00998877", "SN-00998878"],
+      "shipments": [
+        {
+          "shipmentNumber": "SHP-00234",
+          "trackingNumber": "1Z999AA10123456784",
+          "carrierCode": "UPS",
+          "carrierName": "UPS Ground",
+          "shipDate": "2026-03-14T00:00:00Z",
+          "shippedQuantity": 2,
+          "weight": 91.0,
+          "weightUOM": "LB"
+        }
+      ],
+      "extendedAttributes": []
+    }
+  ],
+  "extendedAttributes": []
+}
+```
+
+### Response schema
+
+The response follows the [`CoreInvoice`](/data-types/core-objects#coreinvoice) schema. Key nested types:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `customer` | [`CoreOrganization`](/data-types/core-objects#coreorganization) | Customer entity |
+| `billTo` | [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) | Bill-to with nested location and address |
+| `shipTo` | [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) | Ship-to with nested location and address |
+| `soldTo` | [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) | Sold-to (if applicable) |
+| `contact` | [`CoreContact`](/data-types/core-objects#corecontact) | Invoice contact |
+| `items` | [`CoreInvoiceLineItem[]`](/data-types/core-objects#coreinvoicelineitem) | Invoice line items |
+| `items[].vendor` | [`CoreOrganization`](/data-types/core-objects#coreorganization) | Line-level vendor |
+| `items[].shipTo` | [`CoreAccountLocation`](/data-types/core-objects#coreaccountlocation) | Line-level ship-to override |
+| `items[].shipments` | [`CoreLineShipment[]`](/data-types/core-objects#corelineshipment) | Shipment tracking per line |
+
+See the [core objects reference](/data-types/core-objects) for full field listings of each type.
+
+### Used in
+
+- [Return flow](/returns-hub/return-flow) — Step 2: find the original sale and line items
+- [Warranty flow](/warranty-hub/warranty-flow) — Phase 0: background caching; Phase 3: original invoice for claim submission
